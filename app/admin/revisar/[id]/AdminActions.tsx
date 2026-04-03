@@ -35,6 +35,24 @@ export default function AdminActions({
     router.refresh()
   }
 
+  const handlePending = async () => {
+    setLoading(true)
+    const { error } = await supabase.rpc('admin_review_profile', {
+      target_profile_id: profileId,
+      new_status: 'pendiente',
+      reason: null,
+    })
+
+    if (error) {
+      alert('Error: ' + error.message)
+      setLoading(false)
+      return
+    }
+
+    router.push('/admin/pendientes?status=pendiente')
+    router.refresh()
+  }
+
   const handleReject = async () => {
     if (!reason.trim()) {
       alert('Escribe un motivo de rechazo')
@@ -105,13 +123,22 @@ export default function AdminActions({
       {currentStatus === 'aprobado' && (
         <div className="space-y-4">
           <p className="text-green-700 text-sm">Este perfil está aprobado y es visible públicamente.</p>
-          <button
-            onClick={() => setShowReject(!showReject)}
-            disabled={loading}
-            className="bg-red-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-          >
-            Desaprobar
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handlePending}
+              disabled={loading}
+              className="bg-yellow-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-yellow-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Procesando...' : 'Regresar a pendiente'}
+            </button>
+            <button
+              onClick={() => setShowReject(!showReject)}
+              disabled={loading}
+              className="bg-red-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              Desaprobar
+            </button>
+          </div>
           {showReject && (
             <div className="space-y-3">
               <textarea
@@ -135,14 +162,23 @@ export default function AdminActions({
 
       {currentStatus === 'rechazado' && (
         <div className="space-y-3">
-          <p className="text-red-700 text-sm">Este perfil fue rechazado. Puedes aprobarlo si el ganadero corrigió la información.</p>
-          <button
-            onClick={handleApprove}
-            disabled={loading}
-            className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Procesando...' : 'Aprobar ahora'}
-          </button>
+          <p className="text-red-700 text-sm">Este perfil fue rechazado. Puedes aprobarlo o regresarlo a pendiente.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleApprove}
+              disabled={loading}
+              className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Procesando...' : 'Aprobar ahora'}
+            </button>
+            <button
+              onClick={handlePending}
+              disabled={loading}
+              className="bg-yellow-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-yellow-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Procesando...' : 'Regresar a pendiente'}
+            </button>
+          </div>
         </div>
       )}
     </div>

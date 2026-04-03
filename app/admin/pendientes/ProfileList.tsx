@@ -105,6 +105,15 @@ export default function ProfileList({
                 {loading ? 'Procesando...' : 'Aprobar seleccionados'}
               </button>
             )}
+            {currentStatus !== 'pendiente' && (
+              <button
+                onClick={() => handleBulkAction('pendiente')}
+                disabled={loading}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50"
+              >
+                {loading ? 'Procesando...' : 'Regresar a pendiente'}
+              </button>
+            )}
             {currentStatus !== 'rechazado' && (
               <button
                 onClick={() => setShowRejectModal(true)}
