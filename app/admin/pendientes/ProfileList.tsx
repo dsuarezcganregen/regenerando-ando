@@ -68,7 +68,7 @@ export default function ProfileList({
     }
   }
 
-  const handleBulkAction = async (newStatus: 'aprobado' | 'rechazado', bulkReason?: string) => {
+  const handleBulkAction = async (newStatus: 'aprobado' | 'rechazado' | 'pendiente', bulkReason?: string) => {
     if (selected.size === 0) return
     setLoading(true)
 
