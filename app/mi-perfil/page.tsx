@@ -81,12 +81,14 @@ export default async function MiPerfilPage() {
             <span className="text-2xl">✅</span>
             <div>
               <h3 className="font-semibold text-green-800">Tu perfil está publicado</h3>
-              <Link
-                href={`/rancho/${profile.slug}`}
-                className="text-sm text-green-700 hover:underline"
-              >
-                Ver perfil público &rarr;
-              </Link>
+              {profile.slug && (
+                <Link
+                  href={`/rancho/${profile.slug}`}
+                  className="text-sm text-green-700 hover:underline"
+                >
+                  Ver perfil público &rarr;
+                </Link>
+              )}
             </div>
           </div>
         )}
