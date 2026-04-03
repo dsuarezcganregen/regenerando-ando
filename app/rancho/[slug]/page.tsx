@@ -70,8 +70,12 @@ export default async function RanchoPage(props: { params: Promise<{ slug: string
         {/* Header */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-hero-bg rounded-full flex items-center justify-center text-primary font-bold text-2xl shrink-0">
-              {ranch.ranch_name?.[0]?.toUpperCase() || 'R'}
+            <div className="w-16 h-16 bg-hero-bg rounded-full flex items-center justify-center text-primary font-bold text-2xl shrink-0 overflow-hidden">
+              {ranch.logo_url ? (
+                <img src={ranch.logo_url} alt={ranch.ranch_name || ''} className="w-full h-full object-cover" />
+              ) : (
+                ranch.ranch_name?.[0]?.toUpperCase() || 'R'
+              )}
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -180,13 +184,13 @@ export default async function RanchoPage(props: { params: Promise<{ slug: string
         {/* Contact */}
         <Section title="Contacto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {ranch.email && <InfoRow label="Email" value={ranch.email} href={`mailto:${ranch.email}`} />}
-            {ranch.phone && <InfoRow label="Teléfono" value={`${ranch.phone_country_code || ''} ${ranch.phone}`} href={`tel:${ranch.phone_country_code || ''}${ranch.phone}`} />}
-            {ranch.website && <InfoRow label="Web" value={ranch.website} href={ranch.website} />}
-            {ranch.instagram && <InfoRow label="Instagram" value={`@${ranch.instagram}`} href={`https://instagram.com/${ranch.instagram}`} />}
-            {ranch.facebook && <InfoRow label="Facebook" value={ranch.facebook} href={`https://facebook.com/${ranch.facebook}`} />}
-            {ranch.youtube && <InfoRow label="YouTube" value={ranch.youtube} href={ranch.youtube} />}
-            {ranch.tiktok && <InfoRow label="TikTok" value={`@${ranch.tiktok}`} href={`https://tiktok.com/@${ranch.tiktok}`} />}
+            {ranch.show_email !== false && ranch.email && <InfoRow label="Email" value={ranch.email} href={`mailto:${ranch.email}`} />}
+            {ranch.show_phone !== false && ranch.phone && <InfoRow label="Teléfono" value={`${ranch.phone_country_code || ''} ${ranch.phone}`} href={`tel:${ranch.phone_country_code || ''}${ranch.phone}`} />}
+            {ranch.show_website !== false && ranch.website && <InfoRow label="Web" value={ranch.website} href={ranch.website} />}
+            {ranch.show_social !== false && ranch.instagram && <InfoRow label="Instagram" value={`@${ranch.instagram}`} href={`https://instagram.com/${ranch.instagram}`} />}
+            {ranch.show_social !== false && ranch.facebook && <InfoRow label="Facebook" value={ranch.facebook} href={`https://facebook.com/${ranch.facebook}`} />}
+            {ranch.show_social !== false && ranch.youtube && <InfoRow label="YouTube" value={ranch.youtube} href={ranch.youtube} />}
+            {ranch.show_social !== false && ranch.tiktok && <InfoRow label="TikTok" value={`@${ranch.tiktok}`} href={`https://tiktok.com/@${ranch.tiktok}`} />}
           </div>
         </Section>
 
@@ -229,6 +233,23 @@ export default async function RanchoPage(props: { params: Promise<{ slug: string
                 )}
               </div>
             ))}
+          </Section>
+        )}
+
+        {/* Photo gallery */}
+        {ranch.photos && ranch.photos.length > 0 && (
+          <Section title="Galería">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {ranch.photos.map((photo: any) => (
+                <div key={photo.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200">
+                  <img
+                    src={photo.url}
+                    alt={photo.caption || 'Foto del rancho'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
           </Section>
         )}
       </div>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import PhotoUploader from '@/components/PhotoUploader'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), { ssr: false })
 
@@ -46,6 +47,13 @@ export default function EditarPerfilPage() {
   const [tiktok, setTiktok] = useState('')
   const [offersCourses, setOffersCourses] = useState(false)
   const [coursesDesc, setCoursesDesc] = useState('')
+  const [showEmail, setShowEmail] = useState(true)
+  const [showPhone, setShowPhone] = useState(true)
+  const [showWebsite, setShowWebsite] = useState(true)
+  const [showSocial, setShowSocial] = useState(true)
+  const [logoUrl, setLogoUrl] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [ranchPhotos, setRanchPhotos] = useState<any[]>([])
 
   // Location
   const [country, setCountry] = useState('')
@@ -89,6 +97,11 @@ export default function EditarPerfilPage() {
         setTiktok(profile.tiktok || '')
         setOffersCourses(profile.offers_courses || false)
         setCoursesDesc(profile.courses_description || '')
+        setShowEmail(profile.show_email ?? true)
+        setShowPhone(profile.show_phone ?? true)
+        setShowWebsite(profile.show_website ?? true)
+        setShowSocial(profile.show_social ?? true)
+        setLogoUrl(profile.logo_url || '')
 
         const loc = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
         if (loc) {
@@ -111,10 +124,45 @@ export default function EditarPerfilPage() {
         }
       }
 
+      // Load photos
+      const { data: photosData } = await supabase
+        .from('photos')
+        .select('*')
+        .eq('profile_id', user.id)
+        .order('uploaded_at', { ascending: true })
+
+      if (photosData) setRanchPhotos(photosData)
+
       setLoading(false)
     }
     loadProfile()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !userId) return
+    setUploadingAvatar(true)
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const fileName = `${userId}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, file, { upsert: true })
+
+    if (uploadError) {
+      setMessage({ type: 'error', text: 'Error al subir foto: ' + uploadError.message })
+      setUploadingAvatar(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    setLogoUrl(publicUrl)
+    setUploadingAvatar(false)
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -139,6 +187,11 @@ export default function EditarPerfilPage() {
         tiktok: tiktok || null,
         offers_courses: offersCourses,
         courses_description: coursesDesc || null,
+        show_email: showEmail,
+        show_phone: showPhone,
+        show_website: showWebsite,
+        show_social: showSocial,
+        logo_url: logoUrl || null,
       })
       .eq('id', userId)
 
@@ -230,19 +283,59 @@ export default function EditarPerfilPage() {
         )}
 
         <form onSubmit={handleSave} className="space-y-6">
+          {/* Foto de perfil */}
+          <FormSection title="Foto de perfil">
+            <div className="flex items-center gap-6">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-hero-bg flex items-center justify-center shrink-0">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Foto de perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-3xl text-primary font-bold">{fullName?.[0]?.toUpperCase() || 'R'}</span>
+                )}
+              </div>
+              <div>
+                <label className="inline-block bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary-dark transition-colors">
+                  {uploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-xs text-gray-400 mt-2">JPG o PNG, máximo 2 MB</p>
+              </div>
+            </div>
+          </FormSection>
+
           {/* Info personal */}
           <FormSection title="Información personal">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Nombre completo *" value={fullName} onChange={setFullName} required />
               <Field label="Nombre del rancho" value={ranchName} onChange={setRanchName} />
-              <Field label="Email *" type="email" value={email} onChange={setEmail} required />
-              <div className="flex gap-2">
-                <div className="w-24">
-                  <Field label="Código" value={phoneCode} onChange={setPhoneCode} />
+              <div>
+                <Field label="Email *" type="email" value={email} onChange={setEmail} required />
+                <label className="flex items-center gap-2 mt-1 cursor-pointer">
+                  <input type="checkbox" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary" />
+                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
+                </label>
+              </div>
+              <div>
+                <div className="flex gap-2">
+                  <div className="w-24">
+                    <Field label="Código" value={phoneCode} onChange={setPhoneCode} />
+                  </div>
+                  <div className="flex-1">
+                    <Field label="Teléfono" value={phone} onChange={setPhone} />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <Field label="Teléfono" value={phone} onChange={setPhone} />
-                </div>
+                <label className="flex items-center gap-2 mt-1 cursor-pointer">
+                  <input type="checkbox" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary" />
+                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
+                </label>
               </div>
             </div>
             <div className="mt-4">
@@ -364,12 +457,24 @@ export default function EditarPerfilPage() {
           {/* Redes sociales */}
           <FormSection title="Redes sociales y web">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Sitio web" value={website} onChange={setWebsite} placeholder="https://..." />
+              <div>
+                <Field label="Sitio web" value={website} onChange={setWebsite} placeholder="https://..." />
+                <label className="flex items-center gap-2 mt-1 cursor-pointer">
+                  <input type="checkbox" checked={showWebsite} onChange={(e) => setShowWebsite(e.target.checked)}
+                    className="rounded border-gray-300 text-primary focus:ring-primary" />
+                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
+                </label>
+              </div>
               <Field label="Instagram (usuario)" value={instagram} onChange={setInstagram} placeholder="sin @" />
               <Field label="Facebook (usuario o página)" value={facebook} onChange={setFacebook} />
               <Field label="YouTube (URL del canal)" value={youtube} onChange={setYoutube} />
               <Field label="TikTok (usuario)" value={tiktok} onChange={setTiktok} placeholder="sin @" />
             </div>
+            <label className="flex items-center gap-2 mt-4 cursor-pointer">
+              <input type="checkbox" checked={showSocial} onChange={(e) => setShowSocial(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary" />
+              <span className="text-xs text-gray-500">Mostrar redes sociales en perfil público</span>
+            </label>
           </FormSection>
 
           {/* Cursos */}
@@ -393,6 +498,20 @@ export default function EditarPerfilPage() {
               />
             )}
           </FormSection>
+
+          {/* Fotos del rancho */}
+          {userId && (
+            <FormSection title="Fotos de tu rancho">
+              <p className="text-sm text-gray-500 mb-4">
+                Sube fotos de tu rancho, tus animales, tus pasturas. Este es tu escaparate.
+              </p>
+              <PhotoUploader
+                profileId={userId}
+                photos={ranchPhotos}
+                onPhotosChange={setRanchPhotos}
+              />
+            </FormSection>
+          )}
 
           <button
             type="submit"

@@ -62,8 +62,12 @@ export default function RanchoCard({ ranch }: RanchoCardProps) {
       className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-primary/30 transition-all flex flex-col"
     >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-hero-bg rounded-full flex items-center justify-center text-primary font-bold text-lg shrink-0">
-          {ranch.ranch_name?.[0]?.toUpperCase() || 'R'}
+        <div className="w-12 h-12 bg-hero-bg rounded-full flex items-center justify-center text-primary font-bold text-lg shrink-0 overflow-hidden">
+          {ranch.logo_url ? (
+            <img src={ranch.logo_url} alt={ranch.ranch_name || ''} className="w-full h-full object-cover" />
+          ) : (
+            ranch.ranch_name?.[0]?.toUpperCase() || 'R'
+          )}
         </div>
         <div className="min-w-0">
           <h3 className="font-semibold text-gray-900 truncate">
