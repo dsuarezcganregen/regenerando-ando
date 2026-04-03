@@ -39,7 +39,13 @@ export default async function AdminPage() {
           </Link>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 flex gap-4">
+          <Link
+            href="/admin/mensajes"
+            className="bg-white border border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:border-primary hover:text-primary transition-colors"
+          >
+            💬 Mensajes
+          </Link>
           <Link
             href="/admin/pendientes?status=pendiente"
             className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors"
