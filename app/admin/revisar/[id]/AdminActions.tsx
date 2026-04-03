@@ -103,7 +103,34 @@ export default function AdminActions({
       )}
 
       {currentStatus === 'aprobado' && (
-        <p className="text-green-700 text-sm">Este perfil ya fue aprobado y es visible públicamente.</p>
+        <div className="space-y-4">
+          <p className="text-green-700 text-sm">Este perfil está aprobado y es visible públicamente.</p>
+          <button
+            onClick={() => setShowReject(!showReject)}
+            disabled={loading}
+            className="bg-red-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+          >
+            Desaprobar
+          </button>
+          {showReject && (
+            <div className="space-y-3">
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+                placeholder="Escribe el motivo..."
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400"
+              />
+              <button
+                onClick={handleReject}
+                disabled={loading || !reason.trim()}
+                className="w-full bg-red-600 text-white py-2.5 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Procesando...' : 'Confirmar desaprobación'}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {currentStatus === 'rechazado' && (
