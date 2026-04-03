@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -55,6 +56,7 @@ export default function Navbar() {
             </Link>
             {user ? (
               <>
+                <NotificationBell userId={user.id} />
                 <Link href="/mi-perfil" className="text-gray-600 hover:text-primary transition-colors">
                   Mi Perfil
                 </Link>

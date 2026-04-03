@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createNotification } from '@/lib/notifications'
 
 const systemLabels: Record<string, string> = {
   prv: 'PRV', manejo_holistico: 'Manejo Holístico', puad: 'PUAD',
@@ -96,12 +97,29 @@ export default function ProfileList({
     if (selected.size === 0) return
     setLoading(true)
 
+    const titles: Record<string, string> = {
+      aprobado: 'Tu perfil fue aprobado',
+      rechazado: 'Tu perfil fue rechazado',
+      pendiente: 'Tu perfil fue devuelto a revisión',
+    }
+    const messages: Record<string, string> = {
+      aprobado: 'Tu perfil ya es visible en el directorio. ¡Bienvenido!',
+      rechazado: bulkReason ? `Motivo: ${bulkReason}` : 'Revisa tu perfil.',
+      pendiente: 'Tu perfil ha sido devuelto a estado pendiente.',
+    }
+    const types: Record<string, string> = {
+      aprobado: 'profile_approved',
+      rechazado: 'profile_rejected',
+      pendiente: 'profile_pending',
+    }
+
     for (const id of selected) {
       await supabase.rpc('admin_review_profile', {
         target_profile_id: id,
         new_status: newStatus,
         reason: bulkReason || null,
       })
+      await createNotification(supabase, id, types[newStatus], titles[newStatus], messages[newStatus], id)
     }
 
     setSelected(new Set())

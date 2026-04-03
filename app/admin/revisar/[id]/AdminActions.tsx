@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { createNotification } from '@/lib/notifications'
 
 export default function AdminActions({
   profileId,
@@ -31,6 +32,11 @@ export default function AdminActions({
       return
     }
 
+    await createNotification(supabase, profileId, 'profile_approved',
+      'Tu perfil fue aprobado',
+      'Tu perfil ya es visible en el directorio. ¡Bienvenido!',
+      profileId)
+
     router.push('/admin/pendientes?status=pendiente')
     router.refresh()
   }
@@ -48,6 +54,11 @@ export default function AdminActions({
       setLoading(false)
       return
     }
+
+    await createNotification(supabase, profileId, 'profile_pending',
+      'Tu perfil fue devuelto a revisión',
+      'Tu perfil ha sido devuelto a estado pendiente. Revisa tu información.',
+      profileId)
 
     router.push('/admin/pendientes?status=pendiente')
     router.refresh()
@@ -71,6 +82,11 @@ export default function AdminActions({
       setLoading(false)
       return
     }
+
+    await createNotification(supabase, profileId, 'profile_rejected',
+      'Tu perfil fue rechazado',
+      `Motivo: ${reason.trim()}`,
+      profileId)
 
     router.push('/admin/pendientes?status=pendiente')
     router.refresh()

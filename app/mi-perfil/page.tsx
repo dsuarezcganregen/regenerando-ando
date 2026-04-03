@@ -142,6 +142,14 @@ export default async function MiPerfilPage() {
             <h3 className="font-semibold text-gray-900">📊 Mis resultados</h3>
             <p className="text-sm text-gray-500 mt-1">Registra los resultados de tu ganadería regenerativa</p>
           </Link>
+
+          <Link
+            href="/mi-perfil/notificaciones"
+            className="bg-white rounded-xl border border-gray-200 p-6 hover:border-primary/30 hover:shadow-md transition-all"
+          >
+            <h3 className="font-semibold text-gray-900">🔔 Notificaciones</h3>
+            <p className="text-sm text-gray-500 mt-1">Ve tus notificaciones y configura preferencias</p>
+          </Link>
         </div>
 
         {/* Logout */}

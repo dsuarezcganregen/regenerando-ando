@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { notifyAdmins } from '@/lib/notifications'
 import PhotoUploader from '@/components/PhotoUploader'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), { ssr: false })
@@ -54,6 +55,7 @@ export default function EditarPerfilPage() {
   const [logoUrl, setLogoUrl] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [ranchPhotos, setRanchPhotos] = useState<any[]>([])
+  const [profileStatus, setProfileStatus] = useState('')
 
   // Location
   const [country, setCountry] = useState('')
@@ -102,6 +104,7 @@ export default function EditarPerfilPage() {
         setShowWebsite(profile.show_website ?? true)
         setShowSocial(profile.show_social ?? true)
         setLogoUrl(profile.logo_url || '')
+        setProfileStatus(profile.status || '')
 
         const loc = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
         if (loc) {
@@ -249,6 +252,17 @@ export default function EditarPerfilPage() {
       } else {
         await supabase.from('operations').insert(opData)
       }
+    }
+
+    // Notify admins if profile is pending or rejected
+    if (profileStatus === 'pendiente' || profileStatus === 'rechazado') {
+      await notifyAdmins(
+        supabase,
+        'profile_edited',
+        `${ranchName || fullName} editó su perfil`,
+        `El ganadero ${fullName} actualizó su perfil (estado: ${profileStatus}). Revisa si es apto para aprobar.`,
+        userId
+      )
     }
 
     setMessage({ type: 'success', text: 'Perfil guardado correctamente' })
