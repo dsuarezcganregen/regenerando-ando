@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import LogoutButton from '@/components/LogoutButton'
 
 export const metadata = {
   title: 'Mi Perfil — Regenerando Ando',
@@ -143,9 +144,9 @@ export default async function MiPerfilPage() {
         </div>
 
         {/* Logout */}
-        <form action="/auth/logout" method="POST" className="mt-6">
+        <div className="mt-6">
           <LogoutButton />
-        </form>
+        </div>
       </div>
     </div>
   )
@@ -161,24 +162,3 @@ function InfoItem({ label, value }: { label: string; value: string | null | unde
   )
 }
 
-function LogoutButton() {
-  return <LogoutButtonClient />
-}
-
-function LogoutButtonClient() {
-  'use client'
-  return (
-    <button
-      type="button"
-      className="text-sm text-gray-500 hover:text-red-600 transition-colors"
-      onClick={async () => {
-        const { createClient } = await import('@/lib/supabase/client')
-        const supabase = createClient()
-        await supabase.auth.signOut()
-        window.location.href = '/'
-      }}
-    >
-      Cerrar sesión
-    </button>
-  )
-}
