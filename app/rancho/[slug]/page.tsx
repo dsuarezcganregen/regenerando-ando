@@ -134,8 +134,8 @@ export default async function RanchoPage(props: { params: Promise<{ slug: string
               {operation.business_type && (
                 <InfoRow label="Tipo de negocio" value={businessLabels[operation.business_type] || operation.business_type} />
               )}
-              {operation.years_ranching && (
-                <InfoRow label="Años de ganadería" value={`${operation.years_ranching} años`} />
+              {operation.year_started_ranching && (
+                <InfoRow label="Años en ganadería" value={`${new Date().getFullYear() - operation.year_started_ranching} años (desde ${operation.year_started_ranching})`} />
               )}
               {operation.year_started_regen && (
                 <InfoRow label="Inicio regenerativo" value={operation.year_started_regen.toString()} />

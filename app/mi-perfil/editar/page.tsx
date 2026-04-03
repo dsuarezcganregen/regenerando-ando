@@ -58,7 +58,7 @@ export default function EditarPerfilPage() {
   // Operation
   const [totalHectares, setTotalHectares] = useState('')
   const [regenHectares, setRegenHectares] = useState('')
-  const [yearsRanching, setYearsRanching] = useState('')
+  const [yearStartedRanching, setYearStartedRanching] = useState('')
   const [yearStartedRegen, setYearStartedRegen] = useState('')
   const [primarySystem, setPrimarySystem] = useState('')
   const [businessType, setBusinessType] = useState('')
@@ -104,7 +104,7 @@ export default function EditarPerfilPage() {
         if (op) {
           setTotalHectares(op.total_hectares?.toString() || '')
           setRegenHectares(op.regenerative_hectares?.toString() || '')
-          setYearsRanching(op.years_ranching?.toString() || '')
+          setYearStartedRanching(op.year_started_ranching?.toString() || '')
           setYearStartedRegen(op.year_started_regen?.toString() || '')
           setPrimarySystem(op.primary_system || '')
           setBusinessType(op.business_type || '')
@@ -179,7 +179,7 @@ export default function EditarPerfilPage() {
         profile_id: userId,
         total_hectares: totalHectares ? parseFloat(totalHectares) : null,
         regenerative_hectares: regenHectares ? parseFloat(regenHectares) : null,
-        years_ranching: yearsRanching ? parseInt(yearsRanching) : null,
+        year_started_ranching: yearStartedRanching ? parseInt(yearStartedRanching) : null,
         year_started_regen: yearStartedRegen ? parseInt(yearStartedRegen) : null,
         primary_system: primarySystem || null,
         business_type: businessType || null,
@@ -322,7 +322,7 @@ export default function EditarPerfilPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
               <Field label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
-              <Field label="Años en ganadería" type="number" value={yearsRanching} onChange={setYearsRanching} />
+              <Field label="Año que inició en ganadería" type="number" value={yearStartedRanching} onChange={setYearStartedRanching} placeholder="Ej: 1995" />
               <Field label="Año que inició en regenerativo" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sistema principal</label>

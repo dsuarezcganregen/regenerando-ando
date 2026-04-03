@@ -107,7 +107,10 @@ export default async function RevisarPage(props: { params: Promise<{ id: string 
               <Info label="Ha regenerativas" value={op.regenerative_hectares ? `${Number(op.regenerative_hectares).toLocaleString('es-MX')} ha` : null} />
               <Info label="Cabezas" value={op.head_count?.toString()} />
               <Info label="Sistema" value={systemLabels[op.primary_system] || op.primary_system} />
-              <Info label="Años ganadería" value={op.years_ranching?.toString()} />
+              <Info label="Inicio ganadería" value={op.year_started_ranching?.toString()} />
+              {op.year_started_ranching && (
+                <Info label="Años en ganadería" value={`${new Date().getFullYear() - op.year_started_ranching} años`} />
+              )}
               <Info label="Inicio regenerativo" value={op.year_started_regen?.toString()} />
               {op.year_started_regen && (
                 <Info label="Años en regenerativo" value={`${new Date().getFullYear() - op.year_started_regen} años`} />
