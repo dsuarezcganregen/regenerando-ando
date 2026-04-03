@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const LocationPicker = dynamic(() => import('@/components/LocationPicker'), { ssr: false })
 
 const countries = [
   { code: 'MX', name: 'México' }, { code: 'CO', name: 'Colombia' },
@@ -114,17 +117,6 @@ export default function EditarPerfilPage() {
     }
     loadProfile()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const getLocation = () => {
-    if (!navigator.geolocation) return
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLatitude(pos.coords.latitude.toFixed(6))
-        setLongitude(pos.coords.longitude.toFixed(6))
-      },
-      () => setMessage({ type: 'error', text: 'No se pudo obtener la ubicación' })
-    )
-  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -313,16 +305,18 @@ export default function EditarPerfilPage() {
                 </select>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-              <Field label="Latitud" value={latitude} onChange={setLatitude} placeholder="-99.1234" />
-              <Field label="Longitud" value={longitude} onChange={setLongitude} placeholder="19.4321" />
-              <button
-                type="button"
-                onClick={getLocation}
-                className="px-4 py-2.5 border border-primary text-primary rounded-lg text-sm hover:bg-hero-bg transition-colors"
-              >
-                📍 Obtener GPS
-              </button>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ubicación de tu finca
+              </label>
+              <LocationPicker
+                latitude={latitude}
+                longitude={longitude}
+                onLocationChange={(lat, lng) => {
+                  setLatitude(lat)
+                  setLongitude(lng)
+                }}
+              />
             </div>
           </FormSection>
 
