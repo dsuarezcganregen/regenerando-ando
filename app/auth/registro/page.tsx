@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import SocialLoginButtons from '@/components/SocialLoginButtons'
 
 export default function RegistroPage() {
   const [fullName, setFullName] = useState('')
@@ -100,12 +101,25 @@ export default function RegistroPage() {
           </p>
         </div>
 
-        <form onSubmit={handleRegister} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+          <SocialLoginButtons />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-4 text-gray-400">o con email</span>
+            </div>
+          </div>
+
           {error && (
             <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
+
+          <form onSubmit={handleRegister} className="space-y-4">
 
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -168,14 +182,15 @@ export default function RegistroPage() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary text-white py-2.5 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Creando cuenta...' : 'Crear cuenta con email'}
+            </button>
+          </form>
+        </div>
 
         <p className="mt-4 text-center text-sm text-gray-500">
           ¿Ya tienes cuenta?{' '}
