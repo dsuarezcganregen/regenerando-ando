@@ -27,7 +27,7 @@ async function getRanches(searchParams: SearchParams) {
     .select(`
       id, ranch_name, slug, description, logo_url, offers_courses,
       locations!inner(country, state_province, ecosystem),
-      operations!inner(total_hectares, primary_system, head_count, business_type)
+      operations!inner(total_hectares, primary_system, business_type)
     `, { count: 'exact' })
     .eq('status', 'aprobado')
     .eq('consent_publish', true)

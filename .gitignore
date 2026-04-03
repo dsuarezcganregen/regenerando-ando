@@ -45,3 +45,5 @@ migration_*.csv
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel

@@ -115,11 +115,11 @@ export default async function RanchoPage(props: { params: Promise<{ slug: string
             {operation.regenerative_hectares && (
               <MetricBox label="Ha regenerativas" value={Number(operation.regenerative_hectares).toLocaleString('es-MX')} />
             )}
-            {operation.head_count && (
-              <MetricBox label="Cabezas" value={operation.head_count.toLocaleString('es-MX')} />
-            )}
             {operation.years_regenerative && (
               <MetricBox label="Años en regenerativo" value={operation.years_regenerative.toString()} />
+            )}
+            {envResults.length > 0 && envResults[0].carrying_capacity_after && (
+              <MetricBox label="Capacidad de carga" value={`${envResults[0].carrying_capacity_after} UA/ha`} />
             )}
           </div>
         )}

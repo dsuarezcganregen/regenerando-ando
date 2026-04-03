@@ -89,11 +89,6 @@ export default async function PendientesPage(props: { searchParams: Promise<{ st
                           {Number(p.total_hectares).toLocaleString('es-MX')} ha
                         </span>
                       )}
-                      {p.head_count && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {p.head_count} cabezas
-                        </span>
-                      )}
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${statusColors[p.status] || ''}`}>

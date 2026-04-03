@@ -20,10 +20,9 @@ async function getDashboardData() {
 
   const totalRanchers = stats?.reduce((sum, row) => sum + (row.total_ranchers || 0), 0) || 0
   const totalHectares = stats?.reduce((sum, row) => sum + Number(row.total_hectares || 0), 0) || 0
-  const totalHead = stats?.reduce((sum, row) => sum + (row.total_head_count || 0), 0) || 0
   const totalCountries = stats?.length || 0
 
-  return { stats: stats || [], results, totalRanchers, totalHectares, totalHead, totalCountries }
+  return { stats: stats || [], results, totalRanchers, totalHectares, totalCountries }
 }
 
 export const metadata = {
@@ -32,7 +31,7 @@ export const metadata = {
 }
 
 export default async function DashboardPage() {
-  const { stats, results, totalRanchers, totalHectares, totalHead, totalCountries } =
+  const { stats, results, totalRanchers, totalHectares, totalCountries } =
     await getDashboardData()
 
   const maxRanchers = stats.length > 0 ? stats[0].total_ranchers : 1
@@ -48,7 +47,7 @@ export default async function DashboardPage() {
           <MetricCard label="Ganaderos" value={totalRanchers.toLocaleString('es-MX')} />
           <MetricCard label="Países" value={totalCountries.toString()} />
           <MetricCard label="Hectáreas" value={totalHectares.toLocaleString('es-MX')} />
-          <MetricCard label="Cabezas de ganado" value={totalHead.toLocaleString('es-MX')} />
+          <MetricCard label="Con resultados" value={results?.total_with_results?.toString() || '0'} />
         </div>
 
         {/* Country bars */}

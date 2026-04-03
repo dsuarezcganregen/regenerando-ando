@@ -98,11 +98,6 @@ export default function RanchoCard({ ranch }: RanchoCardProps) {
             {Number(operation.total_hectares).toLocaleString('es-MX')} ha
           </span>
         )}
-        {operation?.head_count && (
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {operation.head_count} cabezas
-          </span>
-        )}
         {ranch.offers_courses && (
           <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
             Ofrece cursos

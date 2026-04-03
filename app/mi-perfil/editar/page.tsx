@@ -327,7 +327,6 @@ export default function EditarPerfilPage() {
               <Field label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
               <Field label="Años en ganadería" type="number" value={yearsRanching} onChange={setYearsRanching} />
               <Field label="Años en regenerativo" type="number" value={yearsRegen} onChange={setYearsRegen} />
-              <Field label="Cabezas de ganado" type="number" value={headCount} onChange={setHeadCount} />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sistema principal</label>
                 <select

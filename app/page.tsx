@@ -32,7 +32,7 @@ async function getFeaturedRanches() {
     .select(`
       id, ranch_name, slug, description, logo_url, offers_courses,
       locations(country, state_province, ecosystem),
-      operations(total_hectares, primary_system, head_count)
+      operations(total_hectares, primary_system)
     `)
     .eq("status", "aprobado")
     .eq("consent_publish", true)
@@ -173,11 +173,6 @@ export default async function Home() {
                       {operation?.total_hectares && (
                         <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                           {Number(operation.total_hectares).toLocaleString("es-MX")} ha
-                        </span>
-                      )}
-                      {operation?.head_count && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {operation.head_count} cabezas
                         </span>
                       )}
                       {ranch.offers_courses && (

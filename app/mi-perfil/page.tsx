@@ -119,7 +119,6 @@ export default async function MiPerfilPage() {
                   {loc?.country && <InfoItem label="País" value={loc.country} />}
                   {loc?.state_province && <InfoItem label="Estado/Provincia" value={loc.state_province} />}
                   {op?.total_hectares && <InfoItem label="Hectáreas" value={`${Number(op.total_hectares).toLocaleString('es-MX')} ha`} />}
-                  {op?.head_count && <InfoItem label="Cabezas" value={op.head_count.toString()} />}
                 </>
               )
             })()}
