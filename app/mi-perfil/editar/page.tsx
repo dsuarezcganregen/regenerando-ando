@@ -59,8 +59,7 @@ export default function EditarPerfilPage() {
   const [totalHectares, setTotalHectares] = useState('')
   const [regenHectares, setRegenHectares] = useState('')
   const [yearsRanching, setYearsRanching] = useState('')
-  const [yearsRegen, setYearsRegen] = useState('')
-  const [headCount, setHeadCount] = useState('')
+  const [yearStartedRegen, setYearStartedRegen] = useState('')
   const [primarySystem, setPrimarySystem] = useState('')
   const [businessType, setBusinessType] = useState('')
 
@@ -106,8 +105,7 @@ export default function EditarPerfilPage() {
           setTotalHectares(op.total_hectares?.toString() || '')
           setRegenHectares(op.regenerative_hectares?.toString() || '')
           setYearsRanching(op.years_ranching?.toString() || '')
-          setYearsRegen(op.years_regenerative?.toString() || '')
-          setHeadCount(op.head_count?.toString() || '')
+          setYearStartedRegen(op.year_started_regen?.toString() || '')
           setPrimarySystem(op.primary_system || '')
           setBusinessType(op.business_type || '')
         }
@@ -176,14 +174,13 @@ export default function EditarPerfilPage() {
     }
 
     // Upsert operation
-    if (totalHectares || headCount || primarySystem) {
+    if (totalHectares || primarySystem) {
       const opData = {
         profile_id: userId,
         total_hectares: totalHectares ? parseFloat(totalHectares) : null,
         regenerative_hectares: regenHectares ? parseFloat(regenHectares) : null,
         years_ranching: yearsRanching ? parseInt(yearsRanching) : null,
-        years_regenerative: yearsRegen ? parseInt(yearsRegen) : null,
-        head_count: headCount ? parseInt(headCount) : null,
+        year_started_regen: yearStartedRegen ? parseInt(yearStartedRegen) : null,
         primary_system: primarySystem || null,
         business_type: businessType || null,
       }
@@ -326,7 +323,7 @@ export default function EditarPerfilPage() {
               <Field label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
               <Field label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
               <Field label="Años en ganadería" type="number" value={yearsRanching} onChange={setYearsRanching} />
-              <Field label="Años en regenerativo" type="number" value={yearsRegen} onChange={setYearsRegen} />
+              <Field label="Año que inició en regenerativo" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sistema principal</label>
                 <select

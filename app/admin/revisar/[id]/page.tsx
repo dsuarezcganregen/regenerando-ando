@@ -108,7 +108,10 @@ export default async function RevisarPage(props: { params: Promise<{ id: string 
               <Info label="Cabezas" value={op.head_count?.toString()} />
               <Info label="Sistema" value={systemLabels[op.primary_system] || op.primary_system} />
               <Info label="Años ganadería" value={op.years_ranching?.toString()} />
-              <Info label="Años regenerativo" value={op.years_regenerative?.toString()} />
+              <Info label="Inicio regenerativo" value={op.year_started_regen?.toString()} />
+              {op.year_started_regen && (
+                <Info label="Años en regenerativo" value={`${new Date().getFullYear() - op.year_started_regen} años`} />
+              )}
             </div>
           </div>
         )}
