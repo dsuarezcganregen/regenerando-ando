@@ -50,8 +50,32 @@ export default function ProfileList({
   const [loading, setLoading] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [reason, setReason] = useState('')
+  const [search, setSearch] = useState('')
   const router = useRouter()
   const supabase = createClient()
+
+  // Filter and sort
+  const filtered = profiles
+    .filter((p) => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      const countryName = countryNames[p.country || '']?.toLowerCase() || ''
+      return (
+        (p.full_name || '').toLowerCase().includes(q) ||
+        (p.ranch_name || '').toLowerCase().includes(q) ||
+        (p.email || '').toLowerCase().includes(q) ||
+        (p.country || '').toLowerCase().includes(q) ||
+        countryName.includes(q) ||
+        (p.state_province || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        (systemLabels[p.primary_system || ''] || '').toLowerCase().includes(q)
+      )
+    })
+    .sort((a, b) => {
+      const nameA = (a.ranch_name || a.full_name || '').toLowerCase()
+      const nameB = (b.ranch_name || b.full_name || '').toLowerCase()
+      return nameA.localeCompare(nameB, 'es')
+    })
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected)
@@ -61,10 +85,10 @@ export default function ProfileList({
   }
 
   const toggleAll = () => {
-    if (selected.size === profiles.length) {
+    if (selected.size === filtered.length) {
       setSelected(new Set())
     } else {
-      setSelected(new Set(profiles.map((p) => p.id)))
+      setSelected(new Set(filtered.map((p) => p.id)))
     }
   }
 
@@ -164,22 +188,36 @@ export default function ProfileList({
         </div>
       )}
 
+      {/* Search */}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por nombre, rancho, país, estado, sistema..."
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          {filtered.length} de {profiles.length} perfiles
+        </p>
+      </div>
+
       {/* Select all */}
       <div className="mb-3 flex items-center gap-2">
         <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
           <input
             type="checkbox"
-            checked={selected.size === profiles.length && profiles.length > 0}
+            checked={selected.size === filtered.length && filtered.length > 0}
             onChange={toggleAll}
             className="rounded border-gray-300 text-primary focus:ring-primary"
           />
-          Seleccionar todos
+          Seleccionar todos ({filtered.length})
         </label>
       </div>
 
       {/* Profile list */}
       <div className="space-y-4">
-        {profiles.map((p) => (
+        {filtered.map((p) => (
           <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-all flex items-start gap-4">
             <input
               type="checkbox"
