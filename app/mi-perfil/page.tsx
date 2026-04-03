@@ -23,21 +23,15 @@ export default async function MiPerfilPage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-gray-900">Completa tu perfil</h1>
-          <p className="mt-2 text-gray-500">Aún no has registrado tu rancho.</p>
-          <Link
-            href="/mi-perfil/editar"
-            className="mt-4 inline-block bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary-dark"
-          >
-            Completar perfil
-          </Link>
-        </div>
-      </div>
-    )
+  if (!profile) redirect('/mi-perfil/editar')
+
+  // Check if profile is incomplete (missing required data)
+  const location = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
+  const operation = Array.isArray(profile.operations) ? profile.operations[0] : profile.operations
+  const isIncomplete = !profile.ranch_name || !location?.country || !operation?.primary_system
+
+  if (isIncomplete && profile.status === 'pendiente') {
+    redirect('/mi-perfil/editar')
   }
 
   return (

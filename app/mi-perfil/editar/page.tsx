@@ -30,6 +30,7 @@ export default function EditarPerfilPage() {
   const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [isNewUser, setIsNewUser] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [userId, setUserId] = useState<string | null>(null)
@@ -105,6 +106,7 @@ export default function EditarPerfilPage() {
         setShowSocial(profile.show_social ?? true)
         setLogoUrl(profile.logo_url || '')
         setProfileStatus(profile.status || '')
+        if (!profile.ranch_name) setIsNewUser(true)
 
         const loc = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
         if (loc) {
@@ -170,6 +172,21 @@ export default function EditarPerfilPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!userId) return
+
+    // Validate required fields
+    const missing: string[] = []
+    if (!fullName.trim()) missing.push('Nombre completo')
+    if (!ranchName.trim()) missing.push('Nombre del rancho')
+    if (!country) missing.push('País')
+    if (!stateProvince.trim()) missing.push('Estado/Provincia')
+    if (!primarySystem) missing.push('Sistema principal')
+
+    if (missing.length > 0) {
+      setMessage({ type: 'error', text: `Campos requeridos: ${missing.join(', ')}` })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     setSaving(true)
     setMessage({ type: '', text: '' })
 
@@ -282,11 +299,27 @@ export default function EditarPerfilPage() {
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Editar perfil</h1>
-          <Link href="/mi-perfil" className="text-sm text-gray-500 hover:text-primary">
-            &larr; Volver
-          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isNewUser ? 'Completa tu perfil' : 'Editar perfil'}
+          </h1>
+          {!isNewUser && (
+            <Link href="/mi-perfil" className="text-sm text-gray-500 hover:text-primary">
+              &larr; Volver
+            </Link>
+          )}
         </div>
+
+        {isNewUser && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <span className="text-2xl">👋</span>
+            <div>
+              <h3 className="font-semibold text-blue-800">¡Bienvenido a Regenerando Ando!</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Completa la información de tu rancho para enviarlo a revisión. Los campos con * son obligatorios.
+              </p>
+            </div>
+          </div>
+        )}
 
         {message.text && (
           <div className={`mb-6 px-4 py-3 rounded-lg text-sm ${

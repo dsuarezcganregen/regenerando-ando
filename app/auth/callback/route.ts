@@ -25,6 +25,8 @@ export async function GET(request: Request) {
           email: data.user.email || '',
           status: 'pendiente',
         })
+        // New user → go to edit profile to complete registration
+        return NextResponse.redirect(`${origin}/mi-perfil/editar`)
       }
 
       return NextResponse.redirect(`${origin}${next}`)
