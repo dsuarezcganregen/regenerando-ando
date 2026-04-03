@@ -1,21 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-
-const countryNames: Record<string, string> = {
-  MX: 'México', CO: 'Colombia', AR: 'Argentina', EC: 'Ecuador',
-  CR: 'Costa Rica', UY: 'Uruguay', ES: 'España', BO: 'Bolivia',
-  GT: 'Guatemala', VE: 'Venezuela', PY: 'Paraguay', CL: 'Chile',
-  PA: 'Panamá', HN: 'Honduras', PE: 'Perú', NI: 'Nicaragua',
-  BR: 'Brasil', US: 'Estados Unidos', SV: 'El Salvador',
-  PT: 'Portugal', ZA: 'Sudáfrica', DO: 'Rep. Dominicana',
-  CU: 'Cuba', AU: 'Australia', NZ: 'Nueva Zelanda', KE: 'Kenia', FR: 'Francia',
-}
-
-const systemLabels: Record<string, string> = {
-  prv: 'PRV', manejo_holistico: 'Manejo Holístico', puad: 'PUAD',
-  silvopastoril: 'Silvopastoril', stre: 'STRE', pastoreo_racional: 'Pastoreo Racional', otro: 'Otro',
-}
+import ProfileList from './ProfileList'
 
 export const metadata = { title: 'Perfiles — Admin — Regenerando Ando' }
 
@@ -34,12 +20,6 @@ export default async function PendientesPage(props: { searchParams: Promise<{ st
     .from('admin_pending_reviews')
     .select('*')
     .eq('status', status)
-
-  const statusColors: Record<string, string> = {
-    pendiente: 'bg-yellow-50 text-yellow-700',
-    aprobado: 'bg-green-50 text-green-700',
-    rechazado: 'bg-red-50 text-red-700',
-  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -64,40 +44,7 @@ export default async function PendientesPage(props: { searchParams: Promise<{ st
         </div>
 
         {profiles && profiles.length > 0 ? (
-          <div className="space-y-4">
-            {profiles.map((p: any) => (
-              <Link key={p.id} href={`/admin/revisar/${p.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-primary/30 transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{p.ranch_name || p.full_name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {p.full_name} &middot; {countryNames[p.country] || p.country || 'Sin país'}
-                      {p.state_province && `, ${p.state_province}`}
-                    </p>
-                    {p.description && (
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">{p.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {p.primary_system && (
-                        <span className="text-xs bg-hero-bg text-primary px-2 py-1 rounded-full">
-                          {systemLabels[p.primary_system] || p.primary_system}
-                        </span>
-                      )}
-                      {p.total_hectares && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {Number(p.total_hectares).toLocaleString('es-MX')} ha
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${statusColors[p.status] || ''}`}>
-                    {p.status}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <ProfileList profiles={profiles} currentStatus={status} />
         ) : (
           <div className="text-center py-12 text-gray-500">
             No hay perfiles {status === 'pendiente' ? 'pendientes' : status === 'aprobado' ? 'aprobados' : 'rechazados'}.
