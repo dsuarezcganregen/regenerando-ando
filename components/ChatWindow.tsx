@@ -70,12 +70,19 @@ export default function ChatWindow({
     if (!newMessage.trim() || sending) return
     setSending(true)
 
-    await supabase.from('messages').insert({
+    const { error } = await supabase.from('messages').insert({
       conversation_id: conversationId,
       sender_id: currentUserId,
       recipient_id: otherUserId,
       body: newMessage.trim(),
     })
+
+    if (error) {
+      console.error('Error sending message:', error.message)
+      alert('Error al enviar mensaje: ' + error.message)
+      setSending(false)
+      return
+    }
 
     setNewMessage('')
     setSending(false)
