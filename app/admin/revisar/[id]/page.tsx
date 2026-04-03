@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import AdminActions from './AdminActions'
+import DeleteAccountButton from '@/components/DeleteAccountButton'
 
 const countryNames: Record<string, string> = {
   MX: 'México', CO: 'Colombia', AR: 'Argentina', EC: 'Ecuador',
@@ -136,6 +137,16 @@ export default async function RevisarPage(props: { params: Promise<{ id: string 
         {/* Admin actions */}
         <div className="mt-6">
           <AdminActions profileId={profile.id} currentStatus={profile.status} />
+        </div>
+
+        {/* Delete account */}
+        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-red-700 mb-3">Zona peligrosa</h2>
+          <DeleteAccountButton
+            userId={profile.id}
+            isAdmin={true}
+            userName={profile.ranch_name || profile.full_name}
+          />
         </div>
       </div>
     </div>

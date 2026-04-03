@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import DeleteAccountButton from '@/components/DeleteAccountButton'
 
 export const metadata = {
   title: 'Mi Perfil — Regenerando Ando',
@@ -154,9 +155,10 @@ export default async function MiPerfilPage() {
           </Link>
         </div>
 
-        {/* Logout */}
-        <div className="mt-6">
+        {/* Logout & Delete */}
+        <div className="mt-6 flex items-center justify-between">
           <LogoutButton />
+          <DeleteAccountButton userId={user.id} />
         </div>
       </div>
     </div>
