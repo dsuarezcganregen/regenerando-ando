@@ -43,6 +43,22 @@ const productOptions = [
   'Becerros al destete','Novillos/engorda','Carne empacada','Leche','Queso','Yogurt',
   'Huevo','Miel','Lana','Composta','Pie de cría','Semen/embriones','Otro',
 ]
+const practicesImplementedOptions = [
+  { value: 'pastoreo_no_selectivo', label: 'Pastoreo no selectivo' },
+  { value: 'puad', label: 'PUAD (Pastoreo Ultra Alta Densidad)' },
+  { value: 'seleccion_genetica', label: 'Selección genética' },
+  { value: 'programacion_partos', label: 'Programación de partos' },
+  { value: 'pastoreo_multiespecie', label: 'Pastoreo multiespecie' },
+  { value: 'silvopastoril', label: 'Silvopastoril' },
+]
+const practicesEliminatedOptions = [
+  { value: 'mecanizacion_suelo', label: 'Mecanización del suelo' },
+  { value: 'agrotoxicos', label: 'Agrotóxicos' },
+  { value: 'ivermectina', label: 'Ivermectina' },
+  { value: 'uso_fuego', label: 'Uso de fuego' },
+  { value: 'monocultivo', label: 'Monocultivo de pastos' },
+  { value: 'tala_desmonte', label: 'Tala / desmonte' },
+]
 const waterSourceOptions = [
   'Bebederos portátiles en potrero','Bebedero fijo (área social)','Arroyo/Río',
   'Represas/jagüeyes','Pozo','Otro',
@@ -112,6 +128,10 @@ export default function RegistroWizardPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [productOther, setProductOther] = useState('')
   const [productFrequency, setProductFrequency] = useState('')
+  // Prácticas implementadas
+  const [practicesImplemented, setPracticesImplemented] = useState<string[]>([])
+  // Prácticas eliminadas
+  const [practicesEliminated, setPracticesEliminated] = useState<string[]>([])
 
   // === STEP 4 ===
   const [avgOccupationDays, setAvgOccupationDays] = useState('')
@@ -337,6 +357,21 @@ export default function RegistroWizardPage() {
     // Management practices
     const practData: any = {
       profile_id: userId,
+      // Prácticas implementadas
+      pastoreo_no_selectivo: practicesImplemented.includes('pastoreo_no_selectivo'),
+      puad: practicesImplemented.includes('puad'),
+      seleccion_genetica: practicesImplemented.includes('seleccion_genetica'),
+      programacion_partos: practicesImplemented.includes('programacion_partos'),
+      pastoreo_multiespecie: practicesImplemented.includes('pastoreo_multiespecie'),
+      silvopastoril: practicesImplemented.includes('silvopastoril'),
+      // Prácticas eliminadas
+      mecanizacion_suelo: practicesEliminated.includes('mecanizacion_suelo'),
+      agrotoxicos: practicesEliminated.includes('agrotoxicos'),
+      ivermectina: practicesEliminated.includes('ivermectina'),
+      uso_fuego: practicesEliminated.includes('uso_fuego'),
+      monocultivo: practicesEliminated.includes('monocultivo'),
+      tala_desmonte: practicesEliminated.includes('tala_desmonte'),
+      // Pastoreo
       avg_occupation_days: avgOccupationDays ? parseFloat(avgOccupationDays) : null,
       grazing_density_ua_ha: grazingDensity ? parseFloat(grazingDensity) : null,
       paddock_changes_max: paddockChangesMax ? parseInt(paddockChangesMax) : null,
@@ -544,6 +579,9 @@ export default function RegistroWizardPage() {
 
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
             {strategies.includes('otro') && <Input label="Especifica la estrategia" value={strategyOther} onChange={setStrategyOther} />}
+
+            <MultiCheck label="Prácticas implementadas" options={practicesImplementedOptions} selected={practicesImplemented} onToggle={(v) => toggle(practicesImplemented, v, setPracticesImplemented)} />
+            <MultiCheck label="Prácticas eliminadas" options={practicesEliminatedOptions} selected={practicesEliminated} onToggle={(v) => toggle(practicesEliminated, v, setPracticesEliminated)} />
 
             <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
             <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />

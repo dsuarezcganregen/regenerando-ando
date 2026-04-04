@@ -18,6 +18,22 @@ const strategyOptions = [
   { value: 'pastoreo_racional', label: 'Pastoreo Racional' },
   { value: 'otro', label: 'Otro' },
 ]
+const practicesImplementedOptions = [
+  { value: 'pastoreo_no_selectivo', label: 'Pastoreo no selectivo' },
+  { value: 'puad', label: 'PUAD (Pastoreo Ultra Alta Densidad)' },
+  { value: 'seleccion_genetica', label: 'Selección genética' },
+  { value: 'programacion_partos', label: 'Programación de partos' },
+  { value: 'pastoreo_multiespecie', label: 'Pastoreo multiespecie' },
+  { value: 'silvopastoril', label: 'Silvopastoril' },
+]
+const practicesEliminatedOptions = [
+  { value: 'mecanizacion_suelo', label: 'Mecanización del suelo' },
+  { value: 'agrotoxicos', label: 'Agrotóxicos' },
+  { value: 'ivermectina', label: 'Ivermectina' },
+  { value: 'uso_fuego', label: 'Uso de fuego' },
+  { value: 'monocultivo', label: 'Monocultivo de pastos' },
+  { value: 'tala_desmonte', label: 'Tala / desmonte' },
+]
 const businessOptions = [
   { value: 'cria', label: 'Cría' },{ value: 'desarrollo', label: 'Desarrollo' },
   { value: 'engorda', label: 'Engorda' },{ value: 'doble_proposito', label: 'Doble propósito' },
@@ -104,6 +120,8 @@ export default function EditarPerfilPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [productOther, setProductOther] = useState('')
   const [productFrequency, setProductFrequency] = useState('')
+  const [practicesImplemented, setPracticesImplemented] = useState<string[]>([])
+  const [practicesEliminated, setPracticesEliminated] = useState<string[]>([])
 
   // Photos
   const [logoUrl, setLogoUrl] = useState('')
@@ -188,6 +206,27 @@ export default function EditarPerfilPage() {
       // Photos
       const { data: photosData } = await supabase.from('photos').select('*').eq('profile_id', user.id).order('uploaded_at')
       if (photosData) setRanchPhotos(photosData)
+
+      // Management practices
+      const { data: mp } = await supabase.from('management_practices').select('*').eq('profile_id', user.id).single()
+      if (mp) {
+        const impl: string[] = []
+        if (mp.pastoreo_no_selectivo) impl.push('pastoreo_no_selectivo')
+        if (mp.puad) impl.push('puad')
+        if (mp.seleccion_genetica) impl.push('seleccion_genetica')
+        if (mp.programacion_partos) impl.push('programacion_partos')
+        if (mp.pastoreo_multiespecie) impl.push('pastoreo_multiespecie')
+        if (mp.silvopastoril) impl.push('silvopastoril')
+        setPracticesImplemented(impl)
+        const elim: string[] = []
+        if (mp.mecanizacion_suelo) elim.push('mecanizacion_suelo')
+        if (mp.agrotoxicos) elim.push('agrotoxicos')
+        if (mp.ivermectina) elim.push('ivermectina')
+        if (mp.uso_fuego) elim.push('uso_fuego')
+        if (mp.monocultivo) elim.push('monocultivo')
+        if (mp.tala_desmonte) elim.push('tala_desmonte')
+        setPracticesEliminated(elim)
+      }
 
       // Experience
       const { data: exp } = await supabase.from('rancher_experience').select('*').eq('profile_id', user.id).single()
@@ -282,6 +321,26 @@ export default function EditarPerfilPage() {
       const breedsStr = [...selectedBreeds, ...(breedOther ? [breedOther] : [])].join(', ')
       await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breedsStr || null })))
     }
+
+    // Management practices (prácticas implementadas y eliminadas)
+    const practData: any = {
+      profile_id: userId,
+      pastoreo_no_selectivo: practicesImplemented.includes('pastoreo_no_selectivo'),
+      puad: practicesImplemented.includes('puad'),
+      seleccion_genetica: practicesImplemented.includes('seleccion_genetica'),
+      programacion_partos: practicesImplemented.includes('programacion_partos'),
+      pastoreo_multiespecie: practicesImplemented.includes('pastoreo_multiespecie'),
+      silvopastoril: practicesImplemented.includes('silvopastoril'),
+      mecanizacion_suelo: practicesEliminated.includes('mecanizacion_suelo'),
+      agrotoxicos: practicesEliminated.includes('agrotoxicos'),
+      ivermectina: practicesEliminated.includes('ivermectina'),
+      uso_fuego: practicesEliminated.includes('uso_fuego'),
+      monocultivo: practicesEliminated.includes('monocultivo'),
+      tala_desmonte: practicesEliminated.includes('tala_desmonte'),
+    }
+    const { data: existingPract } = await supabase.from('management_practices').select('id').eq('profile_id', userId).single()
+    if (existingPract) await supabase.from('management_practices').update(practData).eq('profile_id', userId)
+    else await supabase.from('management_practices').insert(practData)
 
     // Experience
     if (practicesDesc || soilChangeObserved) {
@@ -411,6 +470,8 @@ export default function EditarPerfilPage() {
             </Grid>
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
             {strategies.includes('otro') && <Input label="Especifica" value={strategyOther} onChange={setStrategyOther} />}
+            <MultiCheck label="Prácticas implementadas" options={practicesImplementedOptions} selected={practicesImplemented} onToggle={(v) => toggle(practicesImplemented, v, setPracticesImplemented)} />
+            <MultiCheck label="Prácticas eliminadas" options={practicesEliminatedOptions} selected={practicesEliminated} onToggle={(v) => toggle(practicesEliminated, v, setPracticesEliminated)} />
             <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
             <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
             <div className="mt-4">
