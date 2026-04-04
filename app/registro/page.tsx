@@ -520,7 +520,6 @@ export default function RegistroWizardPage() {
               <Sel label="Generación en ganadería" value={generationRanching} onChange={setGenerationRanching}
                 options={[['primera','Primera generación'],['segunda','Segunda generación'],['tercera','Tercera generación'],['cuarta_o_mas','Cuarta generación o más']]} />
               <Input label="Número de cabezas aproximado" type="number" value={headCount} onChange={setHeadCount} />
-              <Input label="Modelo de negocio previo" value={previousModel} onChange={setPreviousModel} placeholder="¿Cómo manejabas tu rancho antes?" />
             </Grid>
 
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
@@ -567,7 +566,7 @@ export default function RegistroWizardPage() {
             <Section title="Manejo de pastoreo">
               <Grid>
                 <Input label="Tiempo máximo de ocupación de un potrero (días)" type="number" value={avgOccupationDays} onChange={setAvgOccupationDays} />
-                <Input label="Densidad de pastoreo (UA/ha)" type="number" value={grazingDensity} onChange={setGrazingDensity} />
+                <Input label="Densidad de pastoreo promedio (UA/ha)" type="number" value={grazingDensity} onChange={setGrazingDensity} />
                 <Input label="Cambios de potrero por día (en los días más intensivos)" type="number" value={paddockChangesMax} onChange={setPaddockChangesMax} />
                 <Input label="Cambios de potrero regulares por día" type="number" value={paddockChangesRegular} onChange={setPaddockChangesRegular} />
               </Grid>
@@ -762,10 +761,11 @@ export default function RegistroWizardPage() {
                   <Input label="Email o teléfono" value={invContact} onChange={setInvContact} />
                 </Grid>
                 <Textarea label="Mensaje" value={invMessage} onChange={setInvMessage} />
+                <p className="text-xs text-gray-400">La forma más efectiva de invitar es por WhatsApp. También puedes guardar el contacto y le enviaremos un email cuando el sistema de correo esté activo.</p>
                 <div className="flex flex-wrap gap-3">
                   <button onClick={sendInvitation} disabled={!invName.trim() || !invContact.trim()}
-                    className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50">
-                    Enviar invitación
+                    className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50">
+                    Guardar contacto
                   </button>
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent('Hola, te invito a registrar tu rancho en Regenerando Ando, el directorio mundial de ganaderos regenerativos. Es gratuito y es una forma de hacer visible nuestro trabajo. Regístrate en https://regenerando-ando.vercel.app/auth/registro')}`}
