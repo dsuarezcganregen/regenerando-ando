@@ -24,7 +24,26 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
   if (searchParams.pais) query = query.eq('country', searchParams.pais)
   if (searchParams.incomplete === '1') query = query.is('ranch_name', null)
   if (searchParams.q) {
-    query = query.or(`full_name.ilike.%${searchParams.q}%,ranch_name.ilike.%${searchParams.q}%`)
+    const q = searchParams.q
+    // Check if the search term matches a country name, convert to code
+    const countryNameToCode: Record<string, string> = {
+      'méxico': 'MX', 'mexico': 'MX', 'colombia': 'CO', 'argentina': 'AR',
+      'ecuador': 'EC', 'costa rica': 'CR', 'uruguay': 'UY', 'españa': 'ES',
+      'espana': 'ES', 'bolivia': 'BO', 'guatemala': 'GT', 'venezuela': 'VE',
+      'paraguay': 'PY', 'chile': 'CL', 'panamá': 'PA', 'panama': 'PA',
+      'honduras': 'HN', 'perú': 'PE', 'peru': 'PE', 'nicaragua': 'NI',
+      'brasil': 'BR', 'estados unidos': 'US', 'el salvador': 'SV',
+      'portugal': 'PT', 'sudáfrica': 'ZA', 'sudafrica': 'ZA',
+      'república dominicana': 'DO', 'dominicana': 'DO', 'cuba': 'CU',
+      'australia': 'AU', 'nueva zelanda': 'NZ', 'kenia': 'KE', 'francia': 'FR',
+    }
+    const countryCode = countryNameToCode[q.toLowerCase()]
+
+    if (countryCode) {
+      query = query.or(`full_name.ilike.%${q}%,ranch_name.ilike.%${q}%,email.ilike.%${q}%,country.eq.${countryCode}`)
+    } else {
+      query = query.or(`full_name.ilike.%${q}%,ranch_name.ilike.%${q}%,email.ilike.%${q}%,country.ilike.%${q}%`)
+    }
   }
 
   query = query.range(from, to)
