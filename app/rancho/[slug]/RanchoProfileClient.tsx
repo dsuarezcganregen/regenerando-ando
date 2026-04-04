@@ -42,37 +42,43 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
   const hasResults = envR || econR
   const narrative = econR?.before_after_narrative
 
-  // Photo layout
-  const heroPhotos = photos.slice(0, 4)
-  const extraPhotos = photos.slice(4)
-
   return (
     <div className="bg-white min-h-screen">
       {/* SECTION 1: Photo Hero */}
       <div className="max-w-5xl mx-auto px-4">
-        {heroPhotos.length >= 4 ? (
-          <div className="grid grid-cols-4 grid-rows-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
-            <div className="col-span-2 row-span-2"><img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} /></div>
-            {heroPhotos.slice(1, 4).map((p: any) => (
-              <div key={p.id} className="col-span-1">
-                <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
-              </div>
+        {photos.length >= 5 ? (
+          /* 5-6 photos: main left (2 rows) + 4-5 small right in 2 cols */
+          <div className="grid grid-cols-3 grid-rows-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '340px' }}>
+            <div className="row-span-2"><img src={photos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[0].url)} /></div>
+            {photos.slice(1, 5).map((p: any) => (
+              <div key={p.id}><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>
+            ))}
+            {photos[5] && (
+              <div className="col-span-2"><img src={photos[5].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[5].url)} /></div>
+            )}
+          </div>
+        ) : photos.length === 4 ? (
+          <div className="grid grid-cols-3 grid-rows-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
+            <div className="row-span-2"><img src={photos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[0].url)} /></div>
+            <div className="col-span-2"><img src={photos[1].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[1].url)} /></div>
+            {photos.slice(2, 4).map((p: any) => (
+              <div key={p.id}><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>
             ))}
           </div>
-        ) : heroPhotos.length === 3 ? (
+        ) : photos.length === 3 ? (
           <div className="grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '280px' }}>
-            <div className="col-span-2"><img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} /></div>
+            <div className="col-span-2"><img src={photos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[0].url)} /></div>
             <div className="flex flex-col gap-1.5">
-              {heroPhotos.slice(1).map((p: any) => <div key={p.id} className="flex-1 overflow-hidden"><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>)}
+              {photos.slice(1).map((p: any) => <div key={p.id} className="flex-1 overflow-hidden"><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>)}
             </div>
           </div>
-        ) : heroPhotos.length === 2 ? (
+        ) : photos.length === 2 ? (
           <div className="grid grid-cols-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '260px' }}>
-            {heroPhotos.map((p: any) => <img key={p.id} src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />)}
+            {photos.map((p: any) => <img key={p.id} src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />)}
           </div>
-        ) : heroPhotos.length === 1 ? (
+        ) : photos.length === 1 ? (
           <div className="rounded-xl overflow-hidden mt-6" style={{ height: '300px' }}>
-            <img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} />
+            <img src={photos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[0].url)} />
           </div>
         ) : (
           <div className="bg-hero-bg rounded-xl mt-6 flex items-center justify-center gap-3 text-gray-400" style={{ height: '180px' }}>
@@ -210,20 +216,7 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
           </>
         )}
 
-        {/* SECTION 9: Extra gallery */}
-        {extraPhotos.length > 0 && (
-          <>
-            <SectionLabel>Galería</SectionLabel>
-            <div className="grid grid-cols-3 gap-2 mb-6">
-              {extraPhotos.map((p: any) => (
-                <div key={p.id} className="aspect-square rounded-lg overflow-hidden cursor-pointer" onClick={() => setLightbox(p.url)}>
-                  <img src={p.url} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform" />
-                </div>
-              ))}
-            </div>
-            <Hr />
-          </>
-        )}
+        {/* Gallery section removed — all photos shown in hero */}
 
         {/* SECTION 10: Map */}
         {loc?.latitude && loc?.longitude && (
