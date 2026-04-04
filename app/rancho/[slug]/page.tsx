@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import RanchoProfileClient from './RanchoProfileClient'
 
+export const dynamic = 'force-dynamic'
+
 const countryNames: Record<string, string> = {
   MX:'México',CO:'Colombia',AR:'Argentina',EC:'Ecuador',CR:'Costa Rica',UY:'Uruguay',
   ES:'España',BO:'Bolivia',GT:'Guatemala',VE:'Venezuela',PY:'Paraguay',CL:'Chile',
