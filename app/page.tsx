@@ -64,8 +64,25 @@ export default async function Home() {
     { label: "Con resultados", value: data.totalWithResults },
   ]
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Regenerando Ando',
+    url: 'https://www.regenerandoando.com',
+    description: `Directorio mundial de ganaderos regenerativos. ${data.ranchers} ganaderos de ${data.countries} países.`,
+    creator: {
+      '@type': 'Person',
+      name: 'Daniel Suárez',
+      url: 'https://ganaderiaregenerativa.com',
+    },
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-hero-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
