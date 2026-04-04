@@ -4,6 +4,58 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 
+const MAX_WIDTH = 1600
+const MAX_HEIGHT = 1200
+const QUALITY = 0.8
+const MAX_FILE_SIZE_MB = 10
+
+async function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    // If not an image, return as-is
+    if (!file.type.startsWith('image/')) {
+      resolve(file)
+      return
+    }
+
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { width, height } = img
+
+      // Scale down if needed
+      if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height)
+        width = Math.round(width * ratio)
+        height = Math.round(height * ratio)
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob)
+          else reject(new Error('Error al comprimir imagen'))
+        },
+        'image/jpeg',
+        QUALITY
+      )
+    }
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Error al leer imagen'))
+    }
+
+    img.src = url
+  })
+}
+
 interface Photo {
   id: string
   url: string
@@ -40,12 +92,24 @@ export default function PhotoUploader({
     for (const file of Array.from(files)) {
       if (photos.length >= maxPhotos) break
 
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-      const fileName = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        alert(`La foto "${file.name}" es demasiado grande (máximo ${MAX_FILE_SIZE_MB}MB). Se comprimirá automáticamente.`)
+      }
+
+      // Compress image
+      let processedFile: Blob
+      try {
+        processedFile = await compressImage(file)
+      } catch {
+        continue
+      }
+
+      const fileName = `${profileId}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
       const { error: uploadError } = await supabase.storage
         .from('ranch-photos')
-        .upload(fileName, file, { upsert: true })
+        .upload(fileName, processedFile, { upsert: true, contentType: 'image/jpeg' })
 
       if (uploadError) {
         console.error('Upload error:', uploadError.message)

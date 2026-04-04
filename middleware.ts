@@ -32,6 +32,13 @@ export async function middleware(request: NextRequest) {
   // Refresh session if expired
   await supabase.auth.getUser()
 
+  // Prevent caching on dynamic profile pages
+  if (request.nextUrl.pathname.startsWith('/rancho/')) {
+    supabaseResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    supabaseResponse.headers.set('CDN-Cache-Control', 'no-store')
+    supabaseResponse.headers.set('Cloudflare-CDN-Cache-Control', 'no-store')
+  }
+
   return supabaseResponse
 }
 

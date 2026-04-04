@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import RanchoProfileClient from './RanchoProfileClient'
 
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 
 const countryNames: Record<string, string> = {
   MX:'México',CO:'Colombia',AR:'Argentina',EC:'Ecuador',CR:'Costa Rica',UY:'Uruguay',
