@@ -30,6 +30,10 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
 
   if (!profile) redirect('/admin/perfiles')
 
+  const { data: experience } = await supabase.from('rancher_experience').select('*').eq('profile_id', id).single()
+  const { data: references } = await supabase.from('rancher_references').select('*').eq('profile_id', id).order('reference_number')
+  const { data: noRefExplanation } = await supabase.from('no_references_explanation').select('*').eq('profile_id', id).single()
+
   const loc = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
   const op = Array.isArray(profile.operations) ? profile.operations[0] : profile.operations
   const species = profile.ranch_species || []
@@ -178,6 +182,65 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
           ))}
         </Section>
       )}
+
+      {/* Experience */}
+      {experience && (
+        <Section title="Experiencia y verificación">
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase">Prácticas y por qué son regenerativas</p>
+              <p className="text-sm text-gray-900 mt-1">{experience.practices_description}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase">Mayor desafío</p>
+              <p className="text-sm text-gray-900 mt-1">{experience.biggest_challenge}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase">Error y aprendizaje</p>
+              <p className="text-sm text-gray-900 mt-1">{experience.mistake_learned}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase">Cambio observado en suelo</p>
+              <p className="text-sm text-gray-900 mt-1">{experience.soil_change_observed}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase">¿Qué le mostrarías a tu vecino?</p>
+              <p className="text-sm text-gray-900 mt-1">{experience.what_would_show_neighbor}</p>
+            </div>
+          </div>
+        </Section>
+      )}
+
+      {/* References */}
+      <Section title="Referencias">
+        {references && references.length > 0 ? (
+          <div className="space-y-4">
+            <span className="inline-block text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">{references.length} referencia{references.length !== 1 ? 's' : ''}</span>
+            {references.map((ref: any) => (
+              <div key={ref.id} className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900">{ref.reference_name}</p>
+                    <p className="text-sm text-gray-600">{ref.reference_contact}</p>
+                    <p className="text-sm text-gray-500">Relación: {ref.relationship}</p>
+                    {ref.contact_notes && <p className="text-sm text-blue-600 mt-1">Notas: {ref.contact_notes}</p>}
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${ref.contacted ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+                    {ref.contacted ? 'Contactado' : 'Pendiente'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : noRefExplanation ? (
+          <div>
+            <span className="inline-block text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 font-medium mb-3">Sin referencias</span>
+            <p className="text-sm text-gray-700">{noRefExplanation.how_learned}</p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400">Sin información de referencias</p>
+        )}
+      </Section>
 
       {/* Actions */}
       <div className="mt-6">
