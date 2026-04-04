@@ -6,7 +6,7 @@ const PAGE_SIZE = 20
 
 export const metadata = { title: 'Perfiles — Admin — Regenerando Ando' }
 
-export default async function PerfilesPage(props: { searchParams: Promise<{ status?: string; pais?: string; q?: string; page?: string; incomplete?: string }> }) {
+export default async function PerfilesPage(props: { searchParams: Promise<{ status?: string; pais?: string; q?: string; page?: string; incomplete?: string; sort?: string; dir?: string }> }) {
   const searchParams = await props.searchParams
   const supabase = await createClient()
   const status = searchParams.status || ''
@@ -45,6 +45,13 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
       query = query.or(`full_name.ilike.%${q}%,ranch_name.ilike.%${q}%,email.ilike.%${q}%,country.ilike.%${q}%`)
     }
   }
+
+  // Sorting
+  const sortField = searchParams.sort || 'created_at'
+  const sortDir = searchParams.dir === 'asc' ? true : false // ascending = true
+  const validSortFields = ['ranch_name', 'full_name', 'country', 'primary_system', 'total_hectares', 'status', 'created_at']
+  const actualSort = validSortFields.includes(sortField) ? sortField : 'created_at'
+  query = query.order(actualSort, { ascending: sortDir, nullsFirst: false })
 
   query = query.range(from, to)
 

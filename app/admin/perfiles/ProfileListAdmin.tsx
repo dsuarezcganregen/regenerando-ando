@@ -35,6 +35,14 @@ interface Props {
   searchParams: Record<string, string | undefined>
 }
 
+const sortColumns = [
+  { key: 'ranch_name', label: 'Rancho / Ganadero' },
+  { key: 'country', label: 'País' },
+  { key: 'primary_system', label: 'Sistema' },
+  { key: 'total_hectares', label: 'Hectáreas' },
+  { key: 'status', label: 'Status' },
+]
+
 export default function ProfileListAdmin({ profiles, currentStatus, adminRole, totalPages, currentPage, searchParams }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -45,13 +53,33 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
   const supabase = createClient()
   const canApprove = adminRole === 'super_admin' || adminRole === 'moderador'
 
+  const currentSort = searchParams.sort || 'created_at'
+  const currentDir = searchParams.dir || 'desc'
+
+  const buildSortUrl = (field: string) => {
+    const params = new URLSearchParams()
+    if (currentStatus) params.set('status', currentStatus)
+    if (searchParams.pais) params.set('pais', searchParams.pais)
+    if (searchParams.q) params.set('q', searchParams.q)
+    params.set('sort', field)
+    params.set('dir', currentSort === field && currentDir === 'asc' ? 'desc' : 'asc')
+    return `/admin/perfiles?${params.toString()}`
+  }
+
+  const sortArrow = (field: string) => {
+    if (currentSort !== field) return <span className="text-gray-300 ml-1">↕</span>
+    return <span className="text-primary ml-1">{currentDir === 'asc' ? '↑' : '↓'}</span>
+  }
+
   const doSearch = useCallback(() => {
     const params = new URLSearchParams()
     if (currentStatus) params.set('status', currentStatus)
     if (searchParams.pais) params.set('pais', searchParams.pais)
     if (searchInput.trim()) params.set('q', searchInput.trim())
+    if (searchParams.sort) params.set('sort', searchParams.sort)
+    if (searchParams.dir) params.set('dir', searchParams.dir)
     router.push(`/admin/perfiles?${params.toString()}`)
-  }, [currentStatus, searchParams.pais, searchInput, router])
+  }, [currentStatus, searchParams.pais, searchParams.sort, searchParams.dir, searchInput, router])
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected)
@@ -86,6 +114,8 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     if (currentStatus) params.set('status', currentStatus)
     if (searchParams.pais) params.set('pais', searchParams.pais)
     if (searchParams.q) params.set('q', searchParams.q)
+    if (searchParams.sort) params.set('sort', searchParams.sort)
+    if (searchParams.dir) params.set('dir', searchParams.dir)
     if (page > 1) params.set('page', page.toString())
     return `/admin/perfiles?${params.toString()}`
   }
@@ -166,11 +196,31 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {canApprove && <th className="w-10 px-4 py-3"></th>}
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Rancho / Ganadero</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 hidden sm:table-cell">País</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Sistema</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 hidden lg:table-cell">Hectáreas</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+                <th className="text-left px-4 py-3">
+                  <Link href={buildSortUrl('ranch_name')} className="font-medium text-gray-600 hover:text-primary inline-flex items-center">
+                    Rancho / Ganadero{sortArrow('ranch_name')}
+                  </Link>
+                </th>
+                <th className="text-left px-4 py-3 hidden sm:table-cell">
+                  <Link href={buildSortUrl('country')} className="font-medium text-gray-600 hover:text-primary inline-flex items-center">
+                    País{sortArrow('country')}
+                  </Link>
+                </th>
+                <th className="text-left px-4 py-3 hidden md:table-cell">
+                  <Link href={buildSortUrl('primary_system')} className="font-medium text-gray-600 hover:text-primary inline-flex items-center">
+                    Sistema{sortArrow('primary_system')}
+                  </Link>
+                </th>
+                <th className="text-left px-4 py-3 hidden lg:table-cell">
+                  <Link href={buildSortUrl('total_hectares')} className="font-medium text-gray-600 hover:text-primary inline-flex items-center">
+                    Hectáreas{sortArrow('total_hectares')}
+                  </Link>
+                </th>
+                <th className="text-left px-4 py-3">
+                  <Link href={buildSortUrl('status')} className="font-medium text-gray-600 hover:text-primary inline-flex items-center">
+                    Status{sortArrow('status')}
+                  </Link>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
