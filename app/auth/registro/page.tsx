@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import SocialLoginButtons from '@/components/SocialLoginButtons'
+import { sendTransactionalEmail } from '@/lib/send-email'
 
 export default function RegistroPage() {
   const [fullName, setFullName] = useState('')
@@ -59,6 +60,20 @@ export default function RegistroPage() {
         setError('Error al crear el perfil: ' + profileError.message)
         setLoading(false)
         return
+      }
+
+      // Send welcome email to user + notification to admin (non-blocking)
+      if (data.session?.access_token) {
+        sendTransactionalEmail({
+          type: 'welcome',
+          profileId: data.user.id,
+          token: data.session.access_token,
+        }).catch(() => {})
+        sendTransactionalEmail({
+          type: 'new_registration',
+          profileId: data.user.id,
+          token: data.session.access_token,
+        }).catch(() => {})
       }
 
       window.location.href = '/registro'

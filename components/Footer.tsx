@@ -44,8 +44,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Regenerando Ando — Daniel Suárez
+        <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
+          <span>&copy; {new Date().getFullYear()} Regenerando Ando — Daniel Suárez</span>
+          <Link href="/privacidad" className="hover:text-white transition-colors">
+            Política de Privacidad
+          </Link>
         </div>
       </div>
     </footer>

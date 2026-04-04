@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { createNotification } from '@/lib/notifications'
 import { logAdminAction } from '@/lib/activity-log'
+import { sendTransactionalEmail } from '@/lib/send-email'
 
 export default function AdminProfileActions({
   profileId, currentStatus, adminRole, isFeatured, profileName,
@@ -30,6 +31,19 @@ export default function AdminProfileActions({
     const titleMap: Record<string, string> = { aprobado: 'Tu perfil fue aprobado', rechazado: 'Tu perfil fue rechazado', pendiente: 'Tu perfil fue devuelto a revisión' }
     await createNotification(supabase, profileId, `profile_${newStatus === 'aprobado' ? 'approved' : newStatus === 'rechazado' ? 'rejected' : 'pending'}`, titleMap[newStatus], actionReason || '', profileId)
     await logAdminAction(supabase, actionMap[newStatus], profileId, actionReason || `Perfil: ${profileName}`)
+
+    // Send email notification
+    if (newStatus === 'aprobado' || newStatus === 'rechazado') {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token) {
+        await sendTransactionalEmail({
+          type: newStatus === 'aprobado' ? 'approved' : 'rejected',
+          profileId,
+          reason: actionReason,
+          token: session.access_token,
+        })
+      }
+    }
     setLoading(false)
     router.push('/admin/perfiles')
     router.refresh()

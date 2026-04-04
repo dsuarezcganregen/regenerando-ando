@@ -71,7 +71,7 @@ export default function ResultadosPage() {
         setWildlifeIncrease(envData.wildlife_increase || false)
         setWildlifeSpecies(envData.wildlife_indicator_species || '')
         setBiodiversity(envData.biodiversity_overall || '')
-        setAgrochemReduction(envData.agrochemical_reduction_pct?.toString() || '')
+        setAgrochemReduction(envData.agrochemical_reduction_pct != null ? Math.round(envData.agrochemical_reduction_pct * 100).toString() : '')
       }
 
       if (econData) {
@@ -110,7 +110,7 @@ export default function ResultadosPage() {
       wildlife_increase: wildlifeIncrease,
       wildlife_indicator_species: wildlifeSpecies || null,
       biodiversity_overall: biodiversity || null,
-      agrochemical_reduction_pct: agrochemReduction ? parseFloat(agrochemReduction) : null,
+      agrochemical_reduction_pct: agrochemReduction ? parseFloat(agrochemReduction) / 100 : null,
     }
 
     const econData = {

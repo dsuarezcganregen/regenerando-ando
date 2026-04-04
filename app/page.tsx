@@ -1,85 +1,67 @@
 import Link from "next/link"
 import StatsCounter from "@/components/StatsCounter"
+import HomeMapPreview from "@/components/HomeMapPreview"
 import { createClient } from "@/lib/supabase/server"
 
-async function getStats() {
+async function getData() {
   const supabase = await createClient()
 
+  // Stats from view (only approved)
   const { data: dashboardStats } = await supabase
     .from("dashboard_stats")
-    .select("total_ranchers, total_hectares, species_count, country")
+    .select("total_ranchers, species_count, country")
 
-  if (!dashboardStats || dashboardStats.length === 0) {
-    return { ranchers: 0, countries: 0, hectares: 0, species: 0 }
+  const ranchers = dashboardStats?.reduce((sum, row) => sum + (row.total_ranchers || 0), 0) || 0
+  const countries = dashboardStats?.filter(r => r.total_ranchers > 0).length || 0
+  const speciesSet = new Set<string>()
+  const { data: speciesData } = await supabase
+    .from("ranch_species")
+    .select("species, profiles!inner(status)")
+    .eq("profiles.status", "aprobado")
+  speciesData?.forEach(s => speciesSet.add(s.species))
+
+  // Results count
+  const { data: envAll } = await supabase
+    .from("results_environmental")
+    .select("profile_id, would_eliminate_regen:profiles!inner(status)")
+    .eq("profiles.status", "aprobado")
+  const totalWithResults = envAll?.length || 0
+
+  // Verdict
+  const { data: econAll } = await supabase
+    .from("results_economic")
+    .select("would_eliminate_regen, would_recommend, profiles!inner(status)")
+    .eq("profiles.status", "aprobado")
+  const econCount = econAll?.length || 1
+  const wouldNotElim = econAll?.filter(e => !e.would_eliminate_regen).length || 0
+  const wouldRecommend = econAll?.filter(e => e.would_recommend).length || 0
+  const wouldNotElimPct = econCount > 0 ? Math.round((wouldNotElim / econCount) * 100) : 0
+  const wouldRecommendPct = econCount > 0 ? Math.round((wouldRecommend / econCount) * 100) : 0
+
+  // Map markers
+  const { data: mapData } = await supabase.from("map_markers").select("latitude, longitude, country")
+  const mapMarkers = (mapData || []).map(m => ({ lat: m.latitude, lng: m.longitude, country: m.country || '' }))
+
+  return {
+    ranchers,
+    countries,
+    species: speciesSet.size,
+    totalWithResults,
+    wouldNotElimPct,
+    wouldRecommendPct,
+    econCount,
+    mapMarkers,
   }
-
-  const ranchers = dashboardStats.reduce((sum, row) => sum + (row.total_ranchers || 0), 0)
-  const countries = dashboardStats.length
-  const hectares = dashboardStats.reduce((sum, row) => sum + Number(row.total_hectares || 0), 0)
-  const speciesSet = new Set<number>()
-  dashboardStats.forEach((row) => {
-    if (row.species_count) speciesSet.add(row.species_count)
-  })
-
-  return { ranchers, countries, hectares: Math.round(hectares), species: speciesSet.size || 0 }
-}
-
-async function getFeaturedRanches() {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("profiles")
-    .select(`
-      id, ranch_name, slug, description, logo_url, offers_courses,
-      locations(country, state_province, ecosystem),
-      operations(total_hectares, primary_system)
-    `)
-    .eq("status", "aprobado")
-    .eq("consent_publish", true)
-    .order("created_at", { ascending: false })
-    .limit(6)
-
-  return data || []
-}
-
-async function getResultsSummary() {
-  const supabase = await createClient()
-  const { data } = await supabase.from("results_summary").select("*").single()
-  return data
-}
-
-const systemLabels: Record<string, string> = {
-  prv: "PRV",
-  manejo_holistico: "Manejo Holístico",
-  puad: "PUAD",
-  silvopastoril: "Silvopastoril",
-  stre: "STRE",
-  pastoreo_racional: "Pastoreo Racional",
-  otro: "Otro",
-}
-
-const countryNames: Record<string, string> = {
-  MX: "México", CO: "Colombia", AR: "Argentina", EC: "Ecuador",
-  CR: "Costa Rica", UY: "Uruguay", ES: "España", BO: "Bolivia",
-  GT: "Guatemala", VE: "Venezuela", PY: "Paraguay", CL: "Chile",
-  PA: "Panamá", HN: "Honduras", PE: "Perú", NI: "Nicaragua",
-  BR: "Brasil", US: "Estados Unidos", SV: "El Salvador",
-  PT: "Portugal", ZA: "Sudáfrica", DO: "Rep. Dominicana",
-  CU: "Cuba", AU: "Australia", NZ: "Nueva Zelanda", KE: "Kenia", FR: "Francia",
 }
 
 export default async function Home() {
-  const [stats, featuredRanches, results] = await Promise.all([
-    getStats(),
-    getFeaturedRanches(),
-    getResultsSummary(),
-  ])
+  const data = await getData()
 
   const statsItems = [
-    { label: "Ganaderos", value: stats.ranchers },
-    { label: "Países", value: stats.countries },
-    { label: "Con resultados", value: results?.total_with_results || 0 },
-    { label: "Con resultados", value: results?.total_with_results || 0 },
+    { label: "Ganaderos", value: data.ranchers },
+    { label: "Países", value: data.countries },
+    { label: "Especies manejadas", value: data.species },
+    { label: "Con resultados", value: data.totalWithResults },
   ]
 
   return (
@@ -92,8 +74,8 @@ export default async function Home() {
             <span className="text-primary">ganaderos regenerativos</span>
           </h1>
           <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-            Encuentra, conecta y aprende de ganaderos que están regenerando sus tierras
-            en todo el mundo.
+            {data.ranchers} ganaderos de {data.countries} países demuestran que funciona.
+            Encuentra, conecta y aprende de ellos.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -115,142 +97,66 @@ export default async function Home() {
       {/* Stats */}
       <StatsCounter stats={statsItems} />
 
-      {/* Ranchos destacados */}
-      {featuredRanches.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Ranchos destacados
-              </h2>
-              <p className="mt-2 text-gray-500">
-                Conoce a algunos de los ganaderos que están transformando el campo
+      {/* Mapa preview */}
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+            <HomeMapPreview markers={data.mapMarkers} />
+          </div>
+          <div className="text-center mt-6">
+            <Link
+              href="/mapa"
+              className="text-primary font-medium hover:underline inline-flex items-center gap-2"
+            >
+              Ver mapa interactivo completo
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* El veredicto */}
+      <section className="py-12 sm:py-16 bg-gray-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500 mb-8">
+            Basado en {data.econCount} ganaderos que reportaron resultados detallados
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="bg-[#0F6E56] rounded-2xl p-8 sm:p-10 text-center">
+              <div className="text-6xl sm:text-7xl font-black text-white leading-none">
+                {100 - data.wouldNotElimPct}%
+              </div>
+              <p className="text-white/80 text-base sm:text-lg mt-4 leading-relaxed">
+                De los ganaderos eliminaría la ganadería regenerativa de su negocio
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredRanches.map((ranch: any) => {
-                const location = Array.isArray(ranch.locations)
-                  ? ranch.locations[0]
-                  : ranch.locations
-                const operation = Array.isArray(ranch.operations)
-                  ? ranch.operations[0]
-                  : ranch.operations
-
-                return (
-                  <Link
-                    key={ranch.id}
-                    href={`/rancho/${ranch.slug}`}
-                    className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-primary/30 transition-all"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-hero-bg rounded-full flex items-center justify-center text-primary font-bold text-lg shrink-0 overflow-hidden">
-                        {ranch.logo_url ? (
-                          <img src={ranch.logo_url} alt={ranch.ranch_name || ''} className="w-full h-full object-cover" />
-                        ) : (
-                          ranch.ranch_name?.[0] || "R"
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          {ranch.ranch_name || "Sin nombre"}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {location?.state_province && `${location.state_province}, `}
-                          {countryNames[location?.country] || location?.country || ""}
-                        </p>
-                      </div>
-                    </div>
-
-                    {ranch.description && (
-                      <p className="mt-3 text-sm text-gray-600 line-clamp-2">
-                        {ranch.description}
-                      </p>
-                    )}
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {operation?.primary_system && (
-                        <span className="text-xs bg-hero-bg text-primary px-2 py-1 rounded-full">
-                          {systemLabels[operation.primary_system] || operation.primary_system}
-                        </span>
-                      )}
-                      {ranch.offers_courses && (
-                        <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
-                          Ofrece cursos
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-
-            <div className="text-center mt-8">
-              <Link
-                href="/directorio"
-                className="text-primary font-medium hover:underline"
-              >
-                Ver todos los ganaderos &rarr;
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Resultados globales */}
-      {results && (
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Resultados globales
-              </h2>
-              <p className="mt-2 text-gray-500">
-                Impacto documentado por ganaderos regenerativos en el mundo
+            <div className="bg-[#0F6E56] rounded-2xl p-8 sm:p-10 text-center">
+              <div className="text-6xl sm:text-7xl font-black text-white leading-none">
+                {data.wouldRecommendPct}%
+              </div>
+              <p className="text-white/80 text-base sm:text-lg mt-4 leading-relaxed">
+                La recomienda a ojo cerrado
               </p>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <ResultCard
-                icon="🌱"
-                title="Capacidad de carga"
-                value={results.capacity_increase_pct ? `+${results.capacity_increase_pct}%` : "—"}
-                description="Incremento promedio en capacidad de carga (UA/ha)"
-              />
-              <ResultCard
-                icon="🌍"
-                title="Suelo mejorado"
-                value={results.soil_improved_count?.toString() || "0"}
-                description="Ganaderos reportan mejora en cobertura de suelo"
-              />
-              <ResultCard
-                icon="🦅"
-                title="Biodiversidad"
-                value={results.wildlife_increase_count?.toString() || "0"}
-                description="Ganaderos reportan aumento de fauna silvestre"
-              />
-              <ResultCard
-                icon="💰"
-                title="Rentabilidad"
-                value={results.profitability_better_count?.toString() || "0"}
-                description="Ganaderos reportan mejor rentabilidad"
-              />
-              <ResultCard
-                icon="⚗️"
-                title="Reducción agroquímicos"
-                value={results.avg_agrochem_reduction_pct ? `${results.avg_agrochem_reduction_pct}%` : "—"}
-                description="Reducción promedio en uso de agroquímicos"
-              />
-              <ResultCard
-                icon="🔄"
-                title="No volverían atrás"
-                value={results.would_not_eliminate_count?.toString() || "0"}
-                description="Ganaderos que no eliminarían lo regenerativo"
-              />
-            </div>
           </div>
-        </section>
-      )}
+
+          <div className="text-center mt-8">
+            <Link
+              href="/dashboard"
+              className="text-primary font-medium hover:underline inline-flex items-center gap-2"
+            >
+              Ver todos los resultados en el dashboard
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* CTA final */}
       <section className="bg-primary py-16">
@@ -258,7 +164,7 @@ export default async function Home() {
           <h2 className="text-2xl sm:text-3xl font-bold text-white">
             ¿Eres ganadero regenerativo?
           </h2>
-          <p className="mt-3 text-primary-dark text-lg text-white/80">
+          <p className="mt-3 text-lg text-white/80">
             Registra tu rancho y forma parte del directorio mundial.
           </p>
           <Link
@@ -270,26 +176,5 @@ export default async function Home() {
         </div>
       </section>
     </>
-  )
-}
-
-function ResultCard({
-  icon,
-  title,
-  value,
-  description,
-}: {
-  icon: string
-  title: string
-  value: string
-  description: string
-}) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-      <div className="text-3xl mb-2">{icon}</div>
-      <div className="text-2xl font-bold text-primary">{value}</div>
-      <h3 className="mt-1 font-semibold text-gray-900">{title}</h3>
-      <p className="mt-1 text-sm text-gray-500">{description}</p>
-    </div>
   )
 }

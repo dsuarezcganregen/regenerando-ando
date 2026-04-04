@@ -1,0 +1,250 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+import { createClient } from '@supabase/supabase-js'
+
+function getResend() {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY no configurada')
+  return new Resend(key)
+}
+
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
+// Usar dominio verificado de Resend. Si tu dominio aún no verifica, usa 'onboarding@resend.dev'
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Regenerando Ando <onboarding@resend.dev>'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'daniel@regenerandoando.com'
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { type, profileId, reason, token } = body
+
+    // Verify the request comes from an authenticated admin
+    if (!token) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    const supabaseAdmin = getSupabaseAdmin()
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    // Verify user is admin (skip for welcome/new_registration from self)
+    if (type !== 'welcome' && type !== 'new_registration') {
+      const { data: adminData } = await supabaseAdmin
+        .from('admins')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!adminData) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      }
+    }
+
+    // Get profile info
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('full_name, email, ranch_name, slug')
+      .eq('id', profileId)
+      .single()
+
+    if (!profile || !profile.email) {
+      return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 })
+    }
+
+    let emailResult
+
+    switch (type) {
+      case 'approved':
+        emailResult = await sendApprovedEmail(profile)
+        break
+      case 'rejected':
+        emailResult = await sendRejectedEmail(profile, reason)
+        break
+      case 'welcome':
+        emailResult = await sendWelcomeEmail(profile)
+        break
+      case 'new_registration':
+        emailResult = await sendNewRegistrationToAdmin(profile)
+        break
+      default:
+        return NextResponse.json({ error: 'Tipo de email no válido' }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true, id: emailResult?.data?.id })
+  } catch (error) {
+    console.error('Error sending email:', error)
+    return NextResponse.json({ error: 'Error al enviar email' }, { status: 500 })
+  }
+}
+
+// ===================== EMAIL TEMPLATES =====================
+
+async function sendApprovedEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+  const profileUrl = `https://regenerandoando.com/rancho/${profile.slug}`
+
+  return getResend().emails.send({
+    from: FROM_EMAIL,
+    to: profile.email,
+    subject: '✅ ¡Tu perfil en Regenerando Ando fue aprobado!',
+    html: baseTemplate(`
+      <h1 style="color: #0F6E56; font-size: 24px; margin-bottom: 16px;">
+        ¡Felicidades, ${profile.full_name}!
+      </h1>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Tu perfil de <strong>${profile.ranch_name || 'tu rancho'}</strong> ya está publicado en el directorio mundial de ganaderos regenerativos.
+      </p>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        A partir de ahora, otros ganaderos y visitantes podrán encontrarte en el directorio, el mapa interactivo y conocer tu operación.
+      </p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${profileUrl}" style="background-color: #0F6E56; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Ver mi perfil público
+        </a>
+      </div>
+      <p style="font-size: 14px; color: #666; line-height: 1.6;">
+        Puedes editar tu información en cualquier momento desde tu panel en
+        <a href="https://regenerandoando.com/mi-perfil" style="color: #0F6E56;">Mi Perfil</a>.
+      </p>
+      <p style="font-size: 14px; color: #666; line-height: 1.6;">
+        Si tienes resultados ambientales o económicos que compartir, te invitamos a llenar la sección de resultados en tu perfil. Esto ayuda a demostrar el impacto de la ganadería regenerativa.
+      </p>
+    `),
+  })
+}
+
+async function sendRejectedEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }, reason?: string) {
+  return getResend().emails.send({
+    from: FROM_EMAIL,
+    to: profile.email,
+    subject: '⚠️ Tu perfil en Regenerando Ando necesita correcciones',
+    html: baseTemplate(`
+      <h1 style="color: #B45309; font-size: 24px; margin-bottom: 16px;">
+        Hola, ${profile.full_name}
+      </h1>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Revisamos tu perfil de <strong>${profile.ranch_name || 'tu rancho'}</strong> y necesita algunas correcciones antes de poder publicarlo.
+      </p>
+      ${reason ? `
+      <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0;">
+        <p style="font-size: 14px; color: #92400E; margin: 0 0 4px 0; font-weight: 600;">Motivo:</p>
+        <p style="font-size: 15px; color: #78350F; margin: 0; line-height: 1.5;">${reason}</p>
+      </div>
+      ` : ''}
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Por favor revisa la información y haz las correcciones necesarias. Una vez que actualices tu perfil, lo revisaremos nuevamente.
+      </p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://regenerandoando.com/mi-perfil/editar" style="background-color: #B45309; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Editar mi perfil
+        </a>
+      </div>
+      <p style="font-size: 14px; color: #666; line-height: 1.6;">
+        Si tienes dudas, responde a este correo y con gusto te ayudamos.
+      </p>
+    `),
+  })
+}
+
+async function sendWelcomeEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+  return getResend().emails.send({
+    from: FROM_EMAIL,
+    to: profile.email,
+    subject: '🌱 Bienvenido a Regenerando Ando',
+    html: baseTemplate(`
+      <h1 style="color: #0F6E56; font-size: 24px; margin-bottom: 16px;">
+        ¡Bienvenido, ${profile.full_name}!
+      </h1>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Gracias por registrarte en <strong>Regenerando Ando</strong>, el directorio mundial de ganaderos regenerativos.
+      </p>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Tu perfil está ahora <strong>en revisión</strong>. Nuestro equipo lo revisará pronto y te avisaremos cuando esté publicado.
+      </p>
+      <div style="background-color: #E1F5EE; padding: 20px; border-radius: 8px; margin: 24px 0;">
+        <p style="font-size: 15px; color: #0F6E56; margin: 0; line-height: 1.6;">
+          <strong>Mientras tanto, puedes:</strong>
+        </p>
+        <ul style="color: #0F6E56; font-size: 14px; margin: 8px 0 0 0; padding-left: 20px; line-height: 2;">
+          <li>Completar tu perfil con más detalles</li>
+          <li>Agregar fotos de tu rancho</li>
+          <li>Llenar la sección de resultados</li>
+        </ul>
+      </div>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://regenerandoando.com/mi-perfil" style="background-color: #0F6E56; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Ir a mi perfil
+        </a>
+      </div>
+    `),
+  })
+}
+
+async function sendNewRegistrationToAdmin(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+  return getResend().emails.send({
+    from: FROM_EMAIL,
+    to: ADMIN_EMAIL,
+    subject: `📋 Nuevo registro: ${profile.full_name} — ${profile.ranch_name || 'Sin nombre de rancho'}`,
+    html: baseTemplate(`
+      <h1 style="color: #0F6E56; font-size: 24px; margin-bottom: 16px;">
+        Nuevo ganadero registrado
+      </h1>
+      <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 16px 0;">
+        <p style="margin: 0 0 8px 0; font-size: 15px;"><strong>Nombre:</strong> ${profile.full_name}</p>
+        <p style="margin: 0 0 8px 0; font-size: 15px;"><strong>Rancho:</strong> ${profile.ranch_name || 'No especificado'}</p>
+        <p style="margin: 0; font-size: 15px;"><strong>Email:</strong> ${profile.email}</p>
+      </div>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://regenerandoando.com/admin/perfiles" style="background-color: #0F6E56; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Revisar en el panel
+        </a>
+      </div>
+    `),
+  })
+}
+
+// ===================== BASE TEMPLATE =====================
+
+function baseTemplate(content: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #F3F4F6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 32px;">
+      <span style="font-size: 24px; font-weight: 700;">
+        <span style="color: #111;">regenerando</span><span style="color: #1D9E75;">ando</span>
+      </span>
+    </div>
+
+    <!-- Card -->
+    <div style="background-color: white; border-radius: 12px; padding: 40px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      ${content}
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 32px; color: #9CA3AF; font-size: 12px; line-height: 1.6;">
+      <p style="margin: 0;">Regenerando Ando — El directorio mundial de ganaderos regenerativos</p>
+      <p style="margin: 4px 0 0 0;">
+        <a href="https://regenerandoando.com" style="color: #0F6E56; text-decoration: none;">regenerandoando.com</a>
+        &nbsp;·&nbsp;
+        <a href="https://regenerandoando.com/privacidad" style="color: #9CA3AF; text-decoration: none;">Política de privacidad</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`
+}

@@ -54,9 +54,14 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
         <h1 className="text-2xl font-bold text-gray-900">Revisar perfil</h1>
         <div className="flex gap-2">
           {(role === 'super_admin' || role === 'moderador' || role === 'editor') && (
-            <Link href={`/admin/perfiles/${id}/editar`} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
-              Editar
-            </Link>
+            <>
+              <Link href={`/admin/perfiles/${id}/editar`} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
+                Editar
+              </Link>
+              <Link href={`/admin/perfiles/${id}/datos`} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
+                Datos crudos
+              </Link>
+            </>
           )}
           <Link href="/admin/perfiles" className="text-sm text-gray-500 hover:text-primary py-2">&larr; Volver</Link>
         </div>

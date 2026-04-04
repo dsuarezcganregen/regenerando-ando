@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -10,16 +11,22 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // Check if user is admin
-      const { data: admin } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('user_id', data.user.id)
-        .single()
+      // Use service role to bypass RLS when checking admin status
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (serviceKey) {
+        const supabaseAdmin = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceKey
+        )
+        const { data: admin } = await supabaseAdmin
+          .from('admins')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .single()
 
-      if (admin) {
-        // Admin → go to admin panel, no profile needed
-        return NextResponse.redirect(`${origin}/admin`)
+        if (admin) {
+          return NextResponse.redirect(`${origin}/admin`)
+        }
       }
 
       // Regular user → check if profile exists

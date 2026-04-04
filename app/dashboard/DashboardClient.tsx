@@ -8,7 +8,7 @@ const DashboardMiniMap = dynamic(() => import('@/components/DashboardMiniMap'), 
 
 interface Props {
   countryData: { name: string; value: number }[]
-  mapMarkers: { lat: number; lng: number }[]
+  mapMarkers: { lat: number; lng: number; country: string }[]
   ecosystemData: { name: string; value: number }[]
   systemData: { name: string; value: number }[]
   bizData: { name: string; value: number }[]
