@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError(error.message === 'Invalid login credentials'
@@ -27,6 +27,16 @@ export default function LoginPage() {
         : error.message)
       setLoading(false)
       return
+    }
+
+    // Check if user is admin
+    if (loginData.user) {
+      const { data: admin } = await supabase.from('admins').select('id').eq('user_id', loginData.user.id).single()
+      if (admin) {
+        router.push('/admin')
+        router.refresh()
+        return
+      }
     }
 
     router.push('/mi-perfil')

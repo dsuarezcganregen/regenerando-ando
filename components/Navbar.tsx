@@ -8,21 +8,13 @@ import NotificationBell from './NotificationBell'
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-      if (data.user) {
-        supabase.from('admins').select('id').eq('user_id', data.user.id).single()
-          .then(({ data: admin }) => setIsAdmin(!!admin))
-      }
-    })
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (!session?.user) setIsAdmin(false)
     })
 
     return () => subscription.unsubscribe()
@@ -60,11 +52,6 @@ export default function Navbar() {
                 <Link href="/mi-perfil" className="text-gray-600 hover:text-primary transition-colors">
                   Mi Perfil
                 </Link>
-                {isAdmin && (
-                  <Link href="/admin" className="text-gray-600 hover:text-primary transition-colors">
-                    Admin
-                  </Link>
-                )}
                 <button onClick={handleLogout} className="text-gray-500 hover:text-red-600 text-sm transition-colors">
                   Salir
                 </button>
@@ -109,11 +96,6 @@ export default function Navbar() {
                 <Link href="/mi-perfil" className="block px-3 py-2 text-gray-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
                   Mi Perfil
                 </Link>
-                {isAdmin && (
-                  <Link href="/admin" className="block px-3 py-2 text-gray-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-                    Admin
-                  </Link>
-                )}
                 <button onClick={handleLogout} className="block w-full text-left px-3 py-2 text-gray-500 hover:text-red-600">
                   Cerrar sesión
                 </button>

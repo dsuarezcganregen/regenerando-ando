@@ -6,11 +6,6 @@ export const metadata = { title: 'Admin — Regenerando Ando' }
 
 export default async function AdminPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-
-  const { data: admin } = await supabase.from('admins').select('id').eq('user_id', user.id).single()
-  if (!admin) redirect('/')
 
   const { count: pendientes } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pendiente')
   const { count: aprobados } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'aprobado')
