@@ -43,9 +43,6 @@ export default function Navbar() {
             <Link href="/mapa" className="text-gray-600 hover:text-primary transition-colors">
               Mapa
             </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-primary transition-colors">
-              Dashboard
-            </Link>
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
@@ -87,9 +84,6 @@ export default function Navbar() {
             </Link>
             <Link href="/mapa" className="block px-3 py-2 text-gray-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
               Mapa
-            </Link>
-            <Link href="/dashboard" className="block px-3 py-2 text-gray-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-              Dashboard
             </Link>
             {user ? (
               <>
