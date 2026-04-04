@@ -42,18 +42,12 @@ export default async function Home() {
             Un espacio creado para visibilizar, conectar y documentar a los ganaderos
             que ya practican ganadería regenerativa en el mundo.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="mt-10">
             <Link
               href="/auth/registro"
-              className="bg-primary text-white px-8 py-3.5 rounded-lg text-lg font-medium hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+              className="inline-block bg-primary text-white px-10 py-4 rounded-lg text-lg font-medium hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
             >
               Registra tu rancho
-            </Link>
-            <Link
-              href="/directorio"
-              className="border-2 border-primary text-primary px-8 py-3.5 rounded-lg text-lg font-medium hover:bg-primary hover:text-white transition-colors"
-            >
-              Explorar directorio
             </Link>
           </div>
         </div>
