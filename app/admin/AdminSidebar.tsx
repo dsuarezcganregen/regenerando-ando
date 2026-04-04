@@ -98,7 +98,7 @@ export default function AdminSidebar({ adminName, adminRole, userId }: AdminSide
 
       <div className="px-3 py-4 border-t border-gray-800 space-y-2">
         <div className="px-3 py-1">
-          {userId && <NotificationBell userId={userId} />}
+          {userId && <NotificationBell userId={userId} openUpward />}
         </div>
         <Link
           href="/"

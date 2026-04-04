@@ -14,7 +14,7 @@ interface Notification {
   profile_id: string | null
 }
 
-export default function NotificationBell({ userId }: { userId: string }) {
+export default function NotificationBell({ userId, openUpward = false }: { userId: string; openUpward?: boolean }) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
@@ -108,7 +108,9 @@ export default function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-gray-200 shadow-lg z-50 overflow-hidden">
+        <div className={`absolute w-80 bg-white rounded-xl border border-gray-200 shadow-lg z-50 overflow-hidden ${
+          openUpward ? 'bottom-full mb-2 left-0' : 'right-0 mt-2'
+        }`}>
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900 text-sm">Notificaciones</h3>
             {unreadCount > 0 && (
