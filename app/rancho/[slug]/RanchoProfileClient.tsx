@@ -46,29 +46,41 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
     <div className="bg-white min-h-screen">
       {/* SECTION 1: Photo Hero */}
       <div className="max-w-5xl mx-auto px-4">
-        {photos.length >= 4 ? (
-          /* 4-6 photos: main left 50% + right side grid 2×2, optional bottom row */
-          <div className="rounded-xl overflow-hidden mt-6">
-            <div className="flex gap-1.5" style={{ height: '300px' }}>
-              {/* Main photo — left half */}
-              <div className="w-1/2 shrink-0">
-                <img src={photos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[0].url)} />
+        {photos.length === 6 ? (
+          /* 6 photos: 3 columns × 2 rows, all equal */
+          <div className="grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
+            {photos.map((p: any) => (
+              <div key={p.id} className="overflow-hidden">
+                <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
               </div>
-              {/* Right side — 2×2 grid */}
-              <div className="w-1/2 grid grid-cols-2 grid-rows-2 gap-1.5">
-                {photos.slice(1, 5).map((p: any) => (
-                  <div key={p.id} className="overflow-hidden">
-                    <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
-                  </div>
-                ))}
-              </div>
+            ))}
+          </div>
+        ) : photos.length === 5 ? (
+          /* 5 photos: top row 3, bottom row 2 (wider) */
+          <div className="rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
+            <div className="grid grid-cols-3 gap-1.5 h-1/2 mb-1.5">
+              {photos.slice(0, 3).map((p: any) => (
+                <div key={p.id} className="overflow-hidden">
+                  <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
+                </div>
+              ))}
             </div>
-            {/* 6th photo — full width bottom strip */}
-            {photos[5] && (
-              <div className="mt-1.5" style={{ height: '120px' }}>
-                <img src={photos[5].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(photos[5].url)} />
+            <div className="grid grid-cols-2 gap-1.5 h-1/2">
+              {photos.slice(3, 5).map((p: any) => (
+                <div key={p.id} className="overflow-hidden">
+                  <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : photos.length === 4 ? (
+          /* 4 photos: 2×2 grid */
+          <div className="grid grid-cols-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
+            {photos.map((p: any) => (
+              <div key={p.id} className="overflow-hidden">
+                <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
               </div>
-            )}
+            ))}
           </div>
         ) : photos.length === 3 ? (
           <div className="flex gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '280px' }}>
