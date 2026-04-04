@@ -23,6 +23,7 @@ export default function Footer() {
               <li><Link href="/directorio" className="hover:text-white transition-colors">Directorio</Link></li>
               <li><Link href="/mapa" className="hover:text-white transition-colors">Mapa</Link></li>
               <li><Link href="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
+              <li><Link href="/terminos" className="hover:text-white transition-colors">Términos de Uso</Link></li>
             </ul>
           </div>
 
@@ -46,9 +47,14 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
           <span>&copy; {new Date().getFullYear()} Regenerando Ando — Daniel Suárez</span>
-          <Link href="/privacidad" className="hover:text-white transition-colors">
-            Política de Privacidad
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/privacidad" className="hover:text-white transition-colors">
+              Privacidad
+            </Link>
+            <Link href="/terminos" className="hover:text-white transition-colors">
+              Términos
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

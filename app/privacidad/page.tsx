@@ -180,12 +180,18 @@ export default function PrivacidadPage() {
 
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+        <div className="mt-12 pt-8 border-t border-gray-200 flex justify-center gap-6">
+          <Link
+            href="/terminos"
+            className="text-primary font-medium hover:underline"
+          >
+            Términos de Uso
+          </Link>
           <Link
             href="/"
             className="text-primary font-medium hover:underline"
           >
-            ← Volver al inicio
+            Volver al inicio
           </Link>
         </div>
       </div>
