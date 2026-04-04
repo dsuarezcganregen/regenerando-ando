@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { createNotification } from '@/lib/notifications'
 
 interface Admin {
   id: string
@@ -30,7 +31,17 @@ export default function AdminsPage() {
       .select('*')
       .order('created_at', { ascending: true })
 
-    if (data) setAdmins(data)
+    if (data) {
+      // Fetch emails from profiles
+      const userIds = data.map((a) => a.user_id)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds)
+
+      const emailMap = new Map(profiles?.map((p) => [p.id, p.email]) || [])
+      setAdmins(data.map((a) => ({ ...a, email: emailMap.get(a.user_id) || '' })))
+    }
     setLoading(false)
   }
 
@@ -65,7 +76,16 @@ export default function AdminsPage() {
           setMessage({ type: 'error', text: error.message })
         }
       } else {
-        setMessage({ type: 'success', text: `${name} agregado como administrador` })
+        // Notify the new admin
+        await createNotification(
+          supabase,
+          profile.id,
+          'admin_invited',
+          'Has sido agregado como administrador',
+          'Ahora tienes acceso al panel de administración de Regenerando Ando. Inicia sesión para acceder.',
+        )
+
+        setMessage({ type: 'success', text: `${name} agregado como administrador. Se le envió una notificación.` })
         setEmail('')
         setName('')
         await loadAdmins()
@@ -113,7 +133,10 @@ export default function AdminsPage() {
               <div key={admin.id} className="px-6 py-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900">{admin.name}</p>
-                  <p className="text-sm text-gray-500">
+                  {admin.email && (
+                    <p className="text-sm text-gray-600">{admin.email}</p>
+                  )}
+                  <p className="text-xs text-gray-400">
                     Desde {new Date(admin.created_at).toLocaleDateString('es-MX')}
                   </p>
                 </div>
