@@ -51,29 +51,27 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
       {/* SECTION 1: Photo Hero */}
       <div className="max-w-5xl mx-auto px-4">
         {heroPhotos.length >= 4 ? (
-          <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mt-6" style={{ height: '360px' }}>
-            <div className="row-span-2"><img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} /></div>
-            <div className="grid grid-cols-2 grid-rows-2 gap-1 h-full">
-              {heroPhotos.slice(1, 4).map((p: any, i: number) => (
-                <div key={p.id} className={i === 2 ? 'col-span-2' : ''}>
-                  <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-4 grid-rows-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '320px' }}>
+            <div className="col-span-2 row-span-2"><img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} /></div>
+            {heroPhotos.slice(1, 4).map((p: any) => (
+              <div key={p.id} className="col-span-1">
+                <img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />
+              </div>
+            ))}
           </div>
         ) : heroPhotos.length === 3 ? (
-          <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden mt-6" style={{ height: '300px' }}>
+          <div className="grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '280px' }}>
             <div className="col-span-2"><img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} /></div>
-            <div className="flex flex-col gap-1">
-              {heroPhotos.slice(1).map((p: any) => <div key={p.id} className="flex-1"><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>)}
+            <div className="flex flex-col gap-1.5">
+              {heroPhotos.slice(1).map((p: any) => <div key={p.id} className="flex-1 overflow-hidden"><img src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} /></div>)}
             </div>
           </div>
         ) : heroPhotos.length === 2 ? (
-          <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden mt-6" style={{ height: '250px' }}>
+          <div className="grid grid-cols-2 gap-1.5 rounded-xl overflow-hidden mt-6" style={{ height: '260px' }}>
             {heroPhotos.map((p: any) => <img key={p.id} src={p.url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(p.url)} />)}
           </div>
         ) : heroPhotos.length === 1 ? (
-          <div className="rounded-xl overflow-hidden mt-6" style={{ maxHeight: '300px' }}>
+          <div className="rounded-xl overflow-hidden mt-6" style={{ height: '300px' }}>
             <img src={heroPhotos[0].url} alt="" className="w-full h-full object-cover cursor-pointer" onClick={() => setLightbox(heroPhotos[0].url)} />
           </div>
         ) : (
@@ -84,13 +82,13 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
         )}
 
         {/* SECTION 2: Identity */}
-        <div className={`${photos.length > 0 ? '-mt-10 relative z-10' : 'mt-6'}`}>
-          <div className="flex items-end gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full border-4 border-white bg-hero-bg flex items-center justify-center text-primary font-bold text-2xl shrink-0 overflow-hidden shadow-md">
+        <div className="mt-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 rounded-full border-2 border-gray-200 bg-hero-bg flex items-center justify-center text-primary font-bold text-xl shrink-0 overflow-hidden">
               {ranch.logo_url ? <img src={ranch.logo_url} alt="" className="w-full h-full object-cover" /> : ranch.ranch_name?.[0]?.toUpperCase() || 'R'}
             </div>
-            <div className="pb-1">
-              <h1 className="text-xl sm:text-2xl font-medium text-gray-900">{ranch.ranch_name || 'Sin nombre'}</h1>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{ranch.ranch_name || 'Sin nombre'}</h1>
               {locationStr && <p className="text-sm text-gray-500 flex items-center gap-1">📍 {locationStr}</p>}
             </div>
           </div>
