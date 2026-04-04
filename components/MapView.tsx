@@ -86,9 +86,6 @@ export default function MapView({
                   Sistema: {systemLabels[marker.primary_system] || marker.primary_system}
                 </p>
               )}
-              {marker.total_hectares && (
-                <p className="text-xs">{Number(marker.total_hectares).toLocaleString('es-MX')} ha</p>
-              )}
               {marker.slug && (
                 <Link
                   href={`/rancho/${marker.slug}`}

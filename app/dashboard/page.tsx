@@ -149,11 +149,12 @@ export default async function DashboardPage() {
     return { month: m, total: cumulative }
   })
 
+  const totalWithResults = envAll?.length || 0
   const statsItems = [
     { label: 'Ganaderos registrados', value: totalRanchers },
-    { label: 'Hectáreas regenerativas', value: totalHectares, suffix: '+' },
     { label: 'Países representados', value: totalCountries },
     { label: 'Especies manejadas', value: totalSpecies },
+    { label: 'Con resultados documentados', value: totalWithResults },
   ]
 
   const pct = (n: number, total: number) => total > 0 ? Math.round((n / total) * 100) : 0

@@ -97,11 +97,6 @@ export default function RanchoCard({ ranch }: RanchoCardProps) {
             {ecosystemLabels[location.ecosystem] || location.ecosystem}
           </span>
         )}
-        {operation?.total_hectares && (
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {Number(operation.total_hectares).toLocaleString('es-MX')} ha
-          </span>
-        )}
         {ranch.offers_courses && (
           <span className="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
             Ofrece cursos

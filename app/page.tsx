@@ -78,7 +78,7 @@ export default async function Home() {
   const statsItems = [
     { label: "Ganaderos", value: stats.ranchers },
     { label: "Países", value: stats.countries },
-    { label: "Hectáreas", value: stats.hectares, suffix: "+" },
+    { label: "Con resultados", value: results?.total_with_results || 0 },
     { label: "Con resultados", value: results?.total_with_results || 0 },
   ]
 
@@ -172,11 +172,6 @@ export default async function Home() {
                       {operation?.primary_system && (
                         <span className="text-xs bg-hero-bg text-primary px-2 py-1 rounded-full">
                           {systemLabels[operation.primary_system] || operation.primary_system}
-                        </span>
-                      )}
-                      {operation?.total_hectares && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {Number(operation.total_hectares).toLocaleString("es-MX")} ha
                         </span>
                       )}
                       {ranch.offers_courses && (
