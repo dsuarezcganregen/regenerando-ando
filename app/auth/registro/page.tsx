@@ -61,7 +61,7 @@ export default function RegistroPage() {
         return
       }
 
-      window.location.href = '/mi-perfil/editar'
+      window.location.href = '/registro'
       return
     }
 

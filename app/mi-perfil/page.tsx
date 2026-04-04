@@ -24,7 +24,7 @@ export default async function MiPerfilPage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile) redirect('/mi-perfil/editar')
+  if (!profile) redirect('/registro')
 
   // Check if profile is incomplete (missing required data)
   const location = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
@@ -32,7 +32,7 @@ export default async function MiPerfilPage() {
   const isIncomplete = !profile.ranch_name || !location?.country || !operation?.primary_system
 
   if (isIncomplete && profile.status === 'pendiente') {
-    redirect('/mi-perfil/editar')
+    redirect('/registro')
   }
 
   return (

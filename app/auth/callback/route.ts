@@ -36,12 +36,12 @@ export async function GET(request: Request) {
           email: data.user.email || '',
           status: 'pendiente',
         })
-        return NextResponse.redirect(`${origin}/mi-perfil/editar`)
+        return NextResponse.redirect(`${origin}/registro`)
       }
 
       // Existing user with incomplete profile
       if (!existingProfile.ranch_name) {
-        return NextResponse.redirect(`${origin}/mi-perfil/editar`)
+        return NextResponse.redirect(`${origin}/registro`)
       }
 
       return NextResponse.redirect(`${origin}/mi-perfil`)
