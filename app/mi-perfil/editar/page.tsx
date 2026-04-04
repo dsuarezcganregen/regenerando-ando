@@ -10,32 +10,52 @@ import PhotoUploader from '@/components/PhotoUploader'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), { ssr: false })
 
-const countries = [
-  { code: 'MX', name: 'México' }, { code: 'CO', name: 'Colombia' },
-  { code: 'AR', name: 'Argentina' }, { code: 'EC', name: 'Ecuador' },
-  { code: 'CR', name: 'Costa Rica' }, { code: 'UY', name: 'Uruguay' },
-  { code: 'ES', name: 'España' }, { code: 'BO', name: 'Bolivia' },
-  { code: 'GT', name: 'Guatemala' }, { code: 'VE', name: 'Venezuela' },
-  { code: 'PY', name: 'Paraguay' }, { code: 'CL', name: 'Chile' },
-  { code: 'PA', name: 'Panamá' }, { code: 'HN', name: 'Honduras' },
-  { code: 'PE', name: 'Perú' }, { code: 'NI', name: 'Nicaragua' },
-  { code: 'BR', name: 'Brasil' }, { code: 'US', name: 'Estados Unidos' },
-  { code: 'SV', name: 'El Salvador' }, { code: 'PT', name: 'Portugal' },
-  { code: 'ZA', name: 'Sudáfrica' }, { code: 'DO', name: 'Rep. Dominicana' },
-  { code: 'CU', name: 'Cuba' }, { code: 'AU', name: 'Australia' },
-  { code: 'NZ', name: 'Nueva Zelanda' }, { code: 'KE', name: 'Kenia' }, { code: 'FR', name: 'Francia' },
+const strategyOptions = [
+  { value: 'prv', label: 'PRV (Pastoreo Racional Voisin)' },
+  { value: 'manejo_holistico', label: 'Manejo Holístico' },
+  { value: 'puad', label: 'PUAD' },
+  { value: 'silvopastoril', label: 'Silvopastoril' },
+  { value: 'pastoreo_racional', label: 'Pastoreo Racional' },
+  { value: 'otro', label: 'Otro' },
+]
+const businessOptions = [
+  { value: 'cria', label: 'Cría' },{ value: 'desarrollo', label: 'Desarrollo' },
+  { value: 'engorda', label: 'Engorda' },{ value: 'doble_proposito', label: 'Doble propósito' },
+  { value: 'lecheria_especializada', label: 'Lechería especializada' },{ value: 'otro', label: 'Otro' },
+]
+const speciesOptions = [
+  { value: 'bovino', label: 'Bovino' },{ value: 'bufalino', label: 'Bufalino' },
+  { value: 'ovino', label: 'Ovino' },{ value: 'caprino', label: 'Caprino' },
+  { value: 'equino', label: 'Equino' },{ value: 'porcino', label: 'Porcino' },
+  { value: 'gallinas', label: 'Gallinas' },{ value: 'pollos', label: 'Pollos de engorda' },
+  { value: 'abejas', label: 'Abejas' },{ value: 'otro', label: 'Otro' },
+]
+const breedOptions = [
+  'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
+  'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
+  'Holstein','Jersey','Normando','Montbéliarde',
+  'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
+  'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
+  'Senepol','Bonsmara','Tuli',
+  'Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire',
+  'Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana',
+]
+const productOptions = [
+  'Becerros al destete','Novillos/engorda','Carne empacada','Leche','Queso','Yogurt',
+  'Huevo','Miel','Lana','Composta','Pie de cría','Semen/embriones','Otro',
 ]
 
 export default function EditarPerfilPage() {
   const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [isNewUser, setIsNewUser] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [userId, setUserId] = useState<string | null>(null)
+  const [profileStatus, setProfileStatus] = useState('')
+  const [countries, setCountries] = useState<{code:string;name_es:string}[]>([])
 
-  // Profile fields
+  // Personal
   const [fullName, setFullName] = useState('')
   const [ranchName, setRanchName] = useState('')
   const [description, setDescription] = useState('')
@@ -47,75 +67,89 @@ export default function EditarPerfilPage() {
   const [facebook, setFacebook] = useState('')
   const [youtube, setYoutube] = useState('')
   const [tiktok, setTiktok] = useState('')
-  const [offersCourses, setOffersCourses] = useState(false)
-  const [coursesDesc, setCoursesDesc] = useState('')
+  const [hasAdvisor, setHasAdvisor] = useState('')
+  const [advisorName, setAdvisorName] = useState('')
+  const [hasAssociation, setHasAssociation] = useState('')
+  const [associationName, setAssociationName] = useState('')
   const [showEmail, setShowEmail] = useState(true)
   const [showPhone, setShowPhone] = useState(true)
   const [showWebsite, setShowWebsite] = useState(true)
   const [showSocial, setShowSocial] = useState(true)
-  const [logoUrl, setLogoUrl] = useState('')
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [ranchPhotos, setRanchPhotos] = useState<any[]>([])
-  const [profileStatus, setProfileStatus] = useState('')
 
   // Location
   const [country, setCountry] = useState('')
   const [stateProvince, setStateProvince] = useState('')
   const [municipality, setMunicipality] = useState('')
+  const [locality, setLocality] = useState('')
   const [latitude, setLatitude] = useState('')
   const [longitude, setLongitude] = useState('')
   const [ecosystem, setEcosystem] = useState('')
+  const [altitudeMasl, setAltitudeMasl] = useState('')
+  const [precipitationMm, setPrecipitationMm] = useState('')
+  const [rainDistribution, setRainDistribution] = useState('')
 
   // Operation
   const [totalHectares, setTotalHectares] = useState('')
   const [regenHectares, setRegenHectares] = useState('')
   const [yearStartedRanching, setYearStartedRanching] = useState('')
   const [yearStartedRegen, setYearStartedRegen] = useState('')
-  const [primarySystem, setPrimarySystem] = useState('')
-  const [businessType, setBusinessType] = useState('')
+  const [generationRanching, setGenerationRanching] = useState('')
+  const [headCount, setHeadCount] = useState('')
+  const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
+  const [breedOther, setBreedOther] = useState('')
+  const [strategies, setStrategies] = useState<string[]>([])
+  const [strategyOther, setStrategyOther] = useState('')
+  const [businessTypes, setBusinessTypes] = useState<string[]>([])
+  const [selectedSpecies, setSelectedSpecies] = useState<string[]>([])
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [productOther, setProductOther] = useState('')
+  const [productFrequency, setProductFrequency] = useState('')
+
+  // Photos
+  const [logoUrl, setLogoUrl] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [ranchPhotos, setRanchPhotos] = useState<any[]>([])
+  const [offersCourses, setOffersCourses] = useState(false)
+  const [coursesDesc, setCoursesDesc] = useState('')
+
+  // Experience
+  const [practicesDesc, setPracticesDesc] = useState('')
+  const [biggestChallenge, setBiggestChallenge] = useState('')
+  const [mistakeLearned, setMistakeLearned] = useState('')
+  const [soilChangeObserved, setSoilChangeObserved] = useState('')
+  const [whatWouldShow, setWhatWouldShow] = useState('')
 
   useEffect(() => {
-    async function loadProfile() {
+    async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/auth/login'); return }
       setUserId(user.id)
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*, locations(*), operations(*)')
-        .eq('id', user.id)
-        .single()
+      const { data: countriesData } = await supabase.from('countries').select('code, name_es').order('name_es')
+      if (countriesData) setCountries(countriesData)
 
+      const { data: profile } = await supabase.from('profiles').select('*, locations(*), operations(*)').eq('id', user.id).single()
       if (profile) {
-        setFullName(profile.full_name || '')
-        setRanchName(profile.ranch_name || '')
-        setDescription(profile.description || '')
-        setEmail(profile.email || '')
-        setPhone(profile.phone || '')
-        setPhoneCode(profile.phone_country_code || '+52')
-        setWebsite(profile.website || '')
-        setInstagram(profile.instagram || '')
-        setFacebook(profile.facebook || '')
-        setYoutube(profile.youtube || '')
-        setTiktok(profile.tiktok || '')
-        setOffersCourses(profile.offers_courses || false)
-        setCoursesDesc(profile.courses_description || '')
-        setShowEmail(profile.show_email ?? true)
-        setShowPhone(profile.show_phone ?? true)
-        setShowWebsite(profile.show_website ?? true)
-        setShowSocial(profile.show_social ?? true)
-        setLogoUrl(profile.logo_url || '')
+        setFullName(profile.full_name || ''); setRanchName(profile.ranch_name || '')
+        setDescription(profile.description || ''); setEmail(profile.email || '')
+        setPhone(profile.phone || ''); setPhoneCode(profile.phone_country_code || '+52')
+        setWebsite(profile.website || ''); setInstagram(profile.instagram || '')
+        setFacebook(profile.facebook || ''); setYoutube(profile.youtube || '')
+        setTiktok(profile.tiktok || ''); setOffersCourses(profile.offers_courses || false)
+        setCoursesDesc(profile.courses_description || ''); setLogoUrl(profile.logo_url || '')
         setProfileStatus(profile.status || '')
-        if (!profile.ranch_name) setIsNewUser(true)
+        setShowEmail(profile.show_email ?? true); setShowPhone(profile.show_phone ?? true)
+        setShowWebsite(profile.show_website ?? true); setShowSocial(profile.show_social ?? true)
 
         const loc = Array.isArray(profile.locations) ? profile.locations[0] : profile.locations
         if (loc) {
-          setCountry(loc.country || '')
-          setStateProvince(loc.state_province || '')
-          setMunicipality(loc.municipality || '')
-          setLatitude(loc.latitude?.toString() || '')
-          setLongitude(loc.longitude?.toString() || '')
+          setCountry(loc.country || ''); setStateProvince(loc.state_province || '')
+          setMunicipality(loc.municipality || ''); setLocality(loc.locality || '')
+          setLatitude(loc.latitude?.toString() || ''); setLongitude(loc.longitude?.toString() || '')
           setEcosystem(loc.ecosystem || '')
+          setAltitudeMasl(loc.altitude_masl?.toString() || '')
+          setPrecipitationMm(loc.annual_precipitation_mm?.toString() || '')
+          setRainDistribution(loc.rain_distribution || '')
         }
 
         const op = Array.isArray(profile.operations) ? profile.operations[0] : profile.operations
@@ -124,447 +158,316 @@ export default function EditarPerfilPage() {
           setRegenHectares(op.regenerative_hectares?.toString() || '')
           setYearStartedRanching(op.year_started_ranching?.toString() || '')
           setYearStartedRegen(op.year_started_regen?.toString() || '')
-          setPrimarySystem(op.primary_system || '')
-          setBusinessType(op.business_type || '')
+          setGenerationRanching(op.generation_ranching || '')
+          setHeadCount(op.head_count?.toString() || '')
+          setStrategies(op.systems || (op.primary_system ? [op.primary_system] : []))
+          setStrategyOther(op.strategy_other || '')
+          setBusinessTypes(op.business_types || (op.business_type ? [op.business_type] : []))
+          setHasAdvisor(op.advisor_name ? 'si' : ''); setAdvisorName(op.advisor_name || '')
+          setHasAssociation(op.association_name ? 'si' : ''); setAssociationName(op.association_name || '')
         }
       }
 
-      // Load photos
-      const { data: photosData } = await supabase
-        .from('photos')
-        .select('*')
-        .eq('profile_id', user.id)
-        .order('uploaded_at', { ascending: true })
+      // Species
+      const { data: speciesData } = await supabase.from('ranch_species').select('species, breeds').eq('profile_id', user.id)
+      if (speciesData) {
+        setSelectedSpecies(speciesData.map(s => s.species))
+        const b = speciesData[0]?.breeds
+        if (b) {
+          const known = breedOptions.filter(bo => b.includes(bo))
+          setSelectedBreeds(known)
+          const others = b.split(',').map((s: string) => s.trim()).filter((s: string) => !breedOptions.includes(s) && s)
+          setBreedOther(others.join(', '))
+        }
+      }
 
+      // Products
+      const { data: productsData } = await supabase.from('products').select('product_type').eq('profile_id', user.id)
+      if (productsData) setSelectedProducts(productsData.map(p => p.product_type?.replace(/_/g, ' ') || ''))
+
+      // Photos
+      const { data: photosData } = await supabase.from('photos').select('*').eq('profile_id', user.id).order('uploaded_at')
       if (photosData) setRanchPhotos(photosData)
+
+      // Experience
+      const { data: exp } = await supabase.from('rancher_experience').select('*').eq('profile_id', user.id).single()
+      if (exp) {
+        setPracticesDesc(exp.practices_description || ''); setBiggestChallenge(exp.biggest_challenge || '')
+        setMistakeLearned(exp.mistake_learned || ''); setSoilChangeObserved(exp.soil_change_observed || '')
+        setWhatWouldShow(exp.what_would_show_neighbor || '')
+      }
 
       setLoading(false)
     }
-    loadProfile()
+    load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggle = (arr: string[], val: string, setter: (v: string[]) => void) => {
+    setter(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val])
+  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !userId) return
     setUploadingAvatar(true)
-
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const fileName = `${userId}.${ext}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, { upsert: true })
-
-    if (uploadError) {
-      setMessage({ type: 'error', text: 'Error al subir foto: ' + uploadError.message })
-      setUploadingAvatar(false)
-      return
+    const { error } = await supabase.storage.from('avatars').upload(`${userId}.${ext}`, file, { upsert: true })
+    if (!error) {
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(`${userId}.${ext}`)
+      setLogoUrl(publicUrl)
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName)
-
-    setLogoUrl(publicUrl)
     setUploadingAvatar(false)
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!userId) return
-
-    // Validate required fields
     const missing: string[] = []
     if (!fullName.trim()) missing.push('Nombre completo')
     if (!ranchName.trim()) missing.push('Nombre del rancho')
     if (!country) missing.push('País')
     if (!stateProvince.trim()) missing.push('Estado/Provincia')
-    if (!primarySystem) missing.push('Sistema principal')
-
+    if (strategies.length === 0) missing.push('Al menos una estrategia de manejo')
     if (missing.length > 0) {
       setMessage({ type: 'error', text: `Campos requeridos: ${missing.join(', ')}` })
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      return
+      window.scrollTo({ top: 0, behavior: 'smooth' }); return
     }
 
-    setSaving(true)
-    setMessage({ type: '', text: '' })
+    setSaving(true); setMessage({ type: '', text: '' })
 
-    // Update profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        full_name: fullName,
-        ranch_name: ranchName || null,
-        description: description || null,
-        email,
-        phone: phone || null,
-        phone_country_code: phoneCode,
-        website: website || null,
-        instagram: instagram || null,
-        facebook: facebook || null,
-        youtube: youtube || null,
-        tiktok: tiktok || null,
-        offers_courses: offersCourses,
-        courses_description: coursesDesc || null,
-        show_email: showEmail,
-        show_phone: showPhone,
-        show_website: showWebsite,
-        show_social: showSocial,
-        logo_url: logoUrl || null,
-      })
-      .eq('id', userId)
+    // Profile
+    await supabase.from('profiles').update({
+      full_name: fullName, ranch_name: ranchName || null, description: description || null, email,
+      phone: phone || null, phone_country_code: phoneCode, website: website || null,
+      instagram: instagram || null, facebook: facebook || null, youtube: youtube || null, tiktok: tiktok || null,
+      offers_courses: offersCourses, courses_description: coursesDesc || null,
+      logo_url: logoUrl || null, show_email: showEmail, show_phone: showPhone,
+      show_website: showWebsite, show_social: showSocial,
+    }).eq('id', userId)
 
-    if (profileError) {
-      setMessage({ type: 'error', text: 'Error al guardar perfil: ' + profileError.message })
-      setSaving(false)
-      return
+    // Location
+    const locData: any = {
+      profile_id: userId, country, state_province: stateProvince,
+      municipality: municipality || null, locality: locality || null,
+      latitude: latitude ? parseFloat(latitude) : null, longitude: longitude ? parseFloat(longitude) : null,
+      ecosystem: ecosystem || null, altitude_masl: altitudeMasl ? parseInt(altitudeMasl) : null,
+      annual_precipitation_mm: precipitationMm ? parseInt(precipitationMm) : null,
+      rain_distribution: rainDistribution || null,
+    }
+    const { data: eLoc } = await supabase.from('locations').select('id').eq('profile_id', userId).single()
+    if (eLoc) await supabase.from('locations').update(locData).eq('profile_id', userId)
+    else await supabase.from('locations').insert(locData)
+
+    // Operation
+    const opData: any = {
+      profile_id: userId, total_hectares: totalHectares ? parseFloat(totalHectares) : null,
+      regenerative_hectares: regenHectares ? parseFloat(regenHectares) : null,
+      year_started_ranching: yearStartedRanching ? parseInt(yearStartedRanching) : null,
+      year_started_regen: yearStartedRegen ? parseInt(yearStartedRegen) : null,
+      generation_ranching: generationRanching || null,
+      head_count: headCount ? parseInt(headCount) : null,
+      primary_system: strategies[0] || null, systems: strategies,
+      strategy_other: strategies.includes('otro') ? strategyOther : null,
+      business_type: businessTypes[0] || null, business_types: businessTypes,
+      advisor_name: hasAdvisor === 'si' ? advisorName : null,
+      association_name: hasAssociation === 'si' ? associationName : null,
+    }
+    const { data: eOp } = await supabase.from('operations').select('id').eq('profile_id', userId).single()
+    if (eOp) await supabase.from('operations').update(opData).eq('profile_id', userId)
+    else await supabase.from('operations').insert(opData)
+
+    // Species
+    await supabase.from('ranch_species').delete().eq('profile_id', userId)
+    if (selectedSpecies.length > 0) {
+      const breedsStr = [...selectedBreeds, ...(breedOther ? [breedOther] : [])].join(', ')
+      await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breedsStr || null })))
     }
 
-    // Upsert location
-    if (country && stateProvince) {
-      const locationData = {
-        profile_id: userId,
-        country,
-        state_province: stateProvince,
-        municipality: municipality || null,
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
-        ecosystem: ecosystem || null,
-      }
-
-      const { data: existingLoc } = await supabase
-        .from('locations')
-        .select('id')
-        .eq('profile_id', userId)
-        .single()
-
-      if (existingLoc) {
-        await supabase.from('locations').update(locationData).eq('profile_id', userId)
-      } else {
-        await supabase.from('locations').insert(locationData)
-      }
+    // Experience
+    if (practicesDesc || soilChangeObserved) {
+      await supabase.from('rancher_experience').upsert({
+        profile_id: userId, practices_description: practicesDesc || null,
+        biggest_challenge: biggestChallenge || null, mistake_learned: mistakeLearned || null,
+        soil_change_observed: soilChangeObserved || null, what_would_show_neighbor: whatWouldShow || null,
+      }, { onConflict: 'profile_id' })
     }
 
-    // Upsert operation
-    if (totalHectares || primarySystem) {
-      const opData = {
-        profile_id: userId,
-        total_hectares: totalHectares ? parseFloat(totalHectares) : null,
-        regenerative_hectares: regenHectares ? parseFloat(regenHectares) : null,
-        year_started_ranching: yearStartedRanching ? parseInt(yearStartedRanching) : null,
-        year_started_regen: yearStartedRegen ? parseInt(yearStartedRegen) : null,
-        primary_system: primarySystem || null,
-        business_type: businessType || null,
-      }
-
-      const { data: existingOp } = await supabase
-        .from('operations')
-        .select('id')
-        .eq('profile_id', userId)
-        .single()
-
-      if (existingOp) {
-        await supabase.from('operations').update(opData).eq('profile_id', userId)
-      } else {
-        await supabase.from('operations').insert(opData)
-      }
-    }
-
-    // Notify admins if profile is pending or rejected
+    // Notify admins if pending/rejected
     if (profileStatus === 'pendiente' || profileStatus === 'rechazado') {
-      await notifyAdmins(
-        supabase,
-        'profile_edited',
-        `${ranchName || fullName} editó su perfil`,
-        `El ganadero ${fullName} actualizó su perfil (estado: ${profileStatus}). Revisa si es apto para aprobar.`,
-        userId
-      )
+      await notifyAdmins(supabase, 'profile_edited', `${ranchName || fullName} editó su perfil`,
+        `El ganadero ${fullName} actualizó su perfil (estado: ${profileStatus}).`, userId)
     }
 
     setMessage({ type: 'success', text: 'Perfil guardado correctamente' })
-    setSaving(false)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setSaving(false); window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Cargando...</div>
-      </div>
-    )
-  }
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Cargando...</div></div>
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {isNewUser ? 'Completa tu perfil' : 'Editar perfil'}
-          </h1>
-          {!isNewUser && (
-            <Link href="/mi-perfil" className="text-sm text-gray-500 hover:text-primary">
-              &larr; Volver
-            </Link>
-          )}
+          <h1 className="text-2xl font-bold text-gray-900">Editar perfil</h1>
+          <Link href="/mi-perfil" className="text-sm text-gray-500 hover:text-primary">&larr; Volver</Link>
         </div>
 
-        {isNewUser && (
-          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-            <span className="text-2xl">👋</span>
-            <div>
-              <h3 className="font-semibold text-blue-800">¡Bienvenido a Regenerando Ando!</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Completa la información de tu rancho para enviarlo a revisión. Los campos con * son obligatorios.
-              </p>
-            </div>
-          </div>
-        )}
-
         {message.text && (
-          <div className={`mb-6 px-4 py-3 rounded-lg text-sm ${
-            message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
-          }`}>
-            {message.text}
-          </div>
+          <div className={`mb-6 px-4 py-3 rounded-lg text-sm ${message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>{message.text}</div>
         )}
 
         <form onSubmit={handleSave} className="space-y-6">
           {/* Foto de perfil */}
-          <FormSection title="Foto de perfil">
+          <Section title="Foto de perfil">
             <div className="flex items-center gap-6">
-              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-hero-bg flex items-center justify-center shrink-0">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="Foto de perfil" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl text-primary font-bold">{fullName?.[0]?.toUpperCase() || 'R'}</span>
-                )}
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-hero-bg flex items-center justify-center shrink-0">
+                {logoUrl ? <img src={logoUrl} alt="Perfil" className="w-full h-full object-cover" /> : <span className="text-3xl text-primary font-bold">{fullName?.[0]?.toUpperCase() || 'R'}</span>}
               </div>
-              <div>
-                <label className="inline-block bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary-dark transition-colors">
-                  {uploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    disabled={uploadingAvatar}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-xs text-gray-400 mt-2">JPG o PNG, máximo 2 MB</p>
-              </div>
+              <label className="inline-block bg-primary text-white px-4 py-2 rounded-lg text-sm cursor-pointer hover:bg-primary-dark">
+                {uploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} className="hidden" />
+              </label>
             </div>
-          </FormSection>
+          </Section>
 
-          {/* Info personal */}
-          <FormSection title="Información personal">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Nombre completo *" value={fullName} onChange={setFullName} required />
-              <Field label="Nombre del rancho" value={ranchName} onChange={setRanchName} />
+          {/* Datos personales */}
+          <Section title="Datos personales">
+            <Grid>
+              <Input label="Nombre completo *" value={fullName} onChange={setFullName} />
+              <Input label="Nombre del rancho *" value={ranchName} onChange={setRanchName} />
               <div>
-                <Field label="Email *" type="email" value={email} onChange={setEmail} required />
-                <label className="flex items-center gap-2 mt-1 cursor-pointer">
-                  <input type="checkbox" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary" />
-                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
-                </label>
+                <Input label="Email *" type="email" value={email} onChange={setEmail} />
+                <Vis checked={showEmail} onChange={setShowEmail} />
               </div>
               <div>
                 <div className="flex gap-2">
-                  <div className="w-24">
-                    <Field label="Código" value={phoneCode} onChange={setPhoneCode} />
-                  </div>
-                  <div className="flex-1">
-                    <Field label="Teléfono" value={phone} onChange={setPhone} />
-                  </div>
+                  <div className="w-24"><Input label="Código" value={phoneCode} onChange={setPhoneCode} /></div>
+                  <div className="flex-1"><Input label="Teléfono" value={phone} onChange={setPhone} /></div>
                 </div>
-                <label className="flex items-center gap-2 mt-1 cursor-pointer">
-                  <input type="checkbox" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary" />
-                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
-                </label>
+                <Vis checked={showPhone} onChange={setShowPhone} />
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descripción (max 500 caracteres)
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                maxLength={500}
-                rows={3}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-              <p className="text-xs text-gray-400 mt-1">{description.length}/500</p>
-            </div>
-          </FormSection>
+              <div>
+                <Input label="Sitio web" value={website} onChange={setWebsite} placeholder="https://..." />
+                <Vis checked={showWebsite} onChange={setShowWebsite} />
+              </div>
+              <Input label="Instagram" value={instagram} onChange={setInstagram} placeholder="sin @" />
+              <Input label="Facebook" value={facebook} onChange={setFacebook} />
+              <Input label="YouTube" value={youtube} onChange={setYoutube} placeholder="URL del canal" />
+              <Input label="TikTok" value={tiktok} onChange={setTiktok} placeholder="sin @" />
+            </Grid>
+            <Vis checked={showSocial} onChange={setShowSocial} label="Mostrar redes sociales en perfil público" />
+            <Textarea label="Descripción del rancho (max 500)" value={description} onChange={setDescription} maxLength={500} />
+            <Grid>
+              <div>
+                <Sel label="¿Tienes asesor?" value={hasAdvisor} onChange={setHasAdvisor} options={[['si','Sí'],['no','No']]} />
+                {hasAdvisor === 'si' && <Input label="¿Quién?" value={advisorName} onChange={setAdvisorName} />}
+              </div>
+              <div>
+                <Sel label="¿Agrupación ganadera?" value={hasAssociation} onChange={setHasAssociation} options={[['si','Sí'],['no','No']]} />
+                {hasAssociation === 'si' && <Input label="¿Cuál?" value={associationName} onChange={setAssociationName} />}
+              </div>
+            </Grid>
+          </Section>
 
           {/* Ubicación */}
-          <FormSection title="Ubicación">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Section title="Ubicación">
+            <Grid>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">País *</label>
-                <select
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                >
+                <select value={country} onChange={(e) => setCountry(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
                   <option value="">Seleccionar</option>
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
+                  {countries.map(c => <option key={c.code} value={c.code}>{c.name_es}</option>)}
                 </select>
               </div>
-              <Field label="Estado / Provincia *" value={stateProvince} onChange={setStateProvince} />
-              <Field label="Municipio" value={municipality} onChange={setMunicipality} />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ecosistema</label>
-                <select
-                  value={ecosystem}
-                  onChange={(e) => setEcosystem(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                >
-                  <option value="">Seleccionar</option>
-                  <option value="bosque_tropical_humedo">Bosque tropical húmedo</option>
-                  <option value="bosque_tropical_seco">Bosque tropical seco</option>
-                  <option value="bosque_templado">Bosque templado</option>
-                  <option value="bosque_mesofilo">Bosque mesófilo</option>
-                  <option value="pastizal">Pastizal</option>
-                  <option value="sabana">Sabana</option>
-                  <option value="matorral_xerofilo">Matorral xerófilo</option>
-                  <option value="semidesierto">Semidesierto</option>
-                  <option value="desierto">Desierto</option>
-                  <option value="paramo">Páramo</option>
-                  <option value="sistema_agroforestal">Sistema agroforestal</option>
-                  <option value="humedal">Humedal</option>
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
-            </div>
+              <Input label="Estado / Provincia *" value={stateProvince} onChange={setStateProvince} />
+              <Input label="Municipio" value={municipality} onChange={setMunicipality} />
+              <Input label="Localidad / Poblado" value={locality} onChange={setLocality} />
+              <Sel label="Ecosistema" value={ecosystem} onChange={setEcosystem} options={[
+                ['bosque_tropical_humedo','Bosque tropical húmedo'],['bosque_tropical_seco','Bosque tropical seco'],
+                ['bosque_templado','Bosque templado'],['pastizal','Pastizal'],['sabana','Sabana'],
+                ['matorral_xerofilo','Matorral xerófilo'],['semidesierto','Semidesierto'],
+                ['sistema_agroforestal','Sistema agroforestal'],['humedal','Humedal'],['otro','Otro'],
+              ]} />
+              <Input label="Altitud (msnm)" type="number" value={altitudeMasl} onChange={setAltitudeMasl} />
+              <Input label="Precipitación anual (mm)" type="number" value={precipitationMm} onChange={setPrecipitationMm} />
+              <Input label="Distribución de lluvias" value={rainDistribution} onChange={setRainDistribution} placeholder="Ej: mayo a octubre" />
+            </Grid>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ubicación de tu finca
-              </label>
-              <LocationPicker
-                latitude={latitude}
-                longitude={longitude}
-                onLocationChange={(lat, lng) => {
-                  setLatitude(lat)
-                  setLongitude(lng)
-                }}
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ubicación en el mapa</label>
+              <LocationPicker latitude={latitude} longitude={longitude} onLocationChange={(lat, lng) => { setLatitude(lat); setLongitude(lng) }} />
             </div>
-          </FormSection>
+          </Section>
 
           {/* Operación */}
-          <FormSection title="Operación">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
-              <Field label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
-              <Field label="Año que inició en ganadería" type="number" value={yearStartedRanching} onChange={setYearStartedRanching} placeholder="Ej: 1995" />
-              <Field label="Año que inició en regenerativo" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sistema principal</label>
-                <select
-                  value={primarySystem}
-                  onChange={(e) => setPrimarySystem(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                >
-                  <option value="">Seleccionar</option>
-                  <option value="prv">PRV</option>
-                  <option value="manejo_holistico">Manejo Holístico</option>
-                  <option value="puad">PUAD</option>
-                  <option value="silvopastoril">Silvopastoril</option>
-                  <option value="stre">STRE</option>
-                  <option value="pastoreo_racional">Pastoreo Racional</option>
-                  <option value="otro">Otro</option>
-                </select>
+          <Section title="Operación">
+            <Grid>
+              <Input label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
+              <Input label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
+              <Input label="Año de inicio en ganadería" type="number" value={yearStartedRanching} onChange={setYearStartedRanching} placeholder="Ej: 1995" />
+              <Input label="Año de inicio en regenerativo" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
+              <Sel label="Generación en ganadería" value={generationRanching} onChange={setGenerationRanching}
+                options={[['primera','Primera'],['segunda','Segunda'],['tercera','Tercera'],['cuarta_o_mas','Cuarta+']]} />
+              <Input label="Cabezas aproximadas" type="number" value={headCount} onChange={setHeadCount} />
+            </Grid>
+            <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
+            {strategies.includes('otro') && <Input label="Especifica" value={strategyOther} onChange={setStrategyOther} />}
+            <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
+            <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Razas principales</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                {breedOptions.map(b => (
+                  <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedBreeds.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
+                    <input type="checkbox" checked={selectedBreeds.includes(b)} onChange={() => toggle(selectedBreeds, b, setSelectedBreeds)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                    {b}
+                  </label>
+                ))}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de negocio</label>
-                <select
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                >
-                  <option value="">Seleccionar</option>
-                  <option value="cria">Cría</option>
-                  <option value="desarrollo">Desarrollo</option>
-                  <option value="engorda">Engorda</option>
-                  <option value="cria_desarrollo_engorda">Cría + Desarrollo + Engorda</option>
-                  <option value="doble_proposito">Doble propósito</option>
-                  <option value="lecheria_especializada">Lechería especializada</option>
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
+              <Input label="Otra(s)" value={breedOther} onChange={setBreedOther} placeholder="Razas no listadas" />
             </div>
-          </FormSection>
-
-          {/* Redes sociales */}
-          <FormSection title="Redes sociales y web">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Field label="Sitio web" value={website} onChange={setWebsite} placeholder="https://..." />
-                <label className="flex items-center gap-2 mt-1 cursor-pointer">
-                  <input type="checkbox" checked={showWebsite} onChange={(e) => setShowWebsite(e.target.checked)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary" />
-                  <span className="text-xs text-gray-500">Mostrar en perfil público</span>
-                </label>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Productos</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {productOptions.map(p => (
+                  <label key={p} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedProducts.includes(p) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
+                    <input type="checkbox" checked={selectedProducts.includes(p)} onChange={() => toggle(selectedProducts, p, setSelectedProducts)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                    {p}
+                  </label>
+                ))}
               </div>
-              <Field label="Instagram (usuario)" value={instagram} onChange={setInstagram} placeholder="sin @" />
-              <Field label="Facebook (usuario o página)" value={facebook} onChange={setFacebook} />
-              <Field label="YouTube (URL del canal)" value={youtube} onChange={setYoutube} />
-              <Field label="TikTok (usuario)" value={tiktok} onChange={setTiktok} placeholder="sin @" />
+              {selectedProducts.includes('Otro') && <Input label="Especifica" value={productOther} onChange={setProductOther} />}
             </div>
-            <label className="flex items-center gap-2 mt-4 cursor-pointer">
-              <input type="checkbox" checked={showSocial} onChange={(e) => setShowSocial(e.target.checked)}
-                className="rounded border-gray-300 text-primary focus:ring-primary" />
-              <span className="text-xs text-gray-500">Mostrar redes sociales en perfil público</span>
-            </label>
-          </FormSection>
+          </Section>
 
-          {/* Cursos */}
-          <FormSection title="Cursos y capacitación">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={offersCourses}
-                onChange={(e) => setOffersCourses(e.target.checked)}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-gray-700">Ofrezco cursos o capacitación</span>
-            </label>
-            {offersCourses && (
-              <textarea
-                value={coursesDesc}
-                onChange={(e) => setCoursesDesc(e.target.value)}
-                rows={3}
-                placeholder="Describe los cursos que ofreces..."
-                className="mt-3 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-            )}
-          </FormSection>
+          {/* Experiencia */}
+          <Section title="Tu experiencia">
+            <div className="space-y-4">
+              <Textarea label="¿Qué prácticas usas y por qué son regenerativas?" value={practicesDesc} onChange={setPracticesDesc} />
+              <Textarea label="¿Qué fue lo más difícil de empezar?" value={biggestChallenge} onChange={setBiggestChallenge} />
+              <Textarea label="Describe un error y qué aprendiste" value={mistakeLearned} onChange={setMistakeLearned} />
+              <Textarea label="¿Qué cambio observas en tu suelo?" value={soilChangeObserved} onChange={setSoilChangeObserved} />
+              <Textarea label="¿Qué le mostrarías a tu vecino?" value={whatWouldShow} onChange={setWhatWouldShow} />
+            </div>
+          </Section>
 
           {/* Fotos del rancho */}
           {userId && (
-            <FormSection title="Fotos de tu rancho">
-              <p className="text-sm text-gray-500 mb-4">
-                Sube fotos de tu rancho, tus animales, tus pasturas. Este es tu escaparate.
-              </p>
-              <PhotoUploader
-                profileId={userId}
-                photos={ranchPhotos}
-                onPhotosChange={setRanchPhotos}
-              />
-            </FormSection>
+            <Section title="Fotos de tu rancho">
+              <PhotoUploader profileId={userId} photos={ranchPhotos} onPhotosChange={setRanchPhotos} />
+            </Section>
           )}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
-          >
+          {/* Cursos */}
+          <Section title="Cursos y capacitación">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={offersCourses} onChange={(e) => setOffersCourses(e.target.checked)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+              <span className="text-sm">Ofrezco cursos o capacitación</span>
+            </label>
+            {offersCourses && <Textarea label="Descripción" value={coursesDesc} onChange={setCoursesDesc} />}
+          </Section>
+
+          <button type="submit" disabled={saving}
+            className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50">
             {saving ? 'Guardando...' : 'Guardar perfil'}
           </button>
         </form>
@@ -573,32 +476,45 @@ export default function EditarPerfilPage() {
   )
 }
 
-function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-      {children}
-    </div>
-  )
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return <div className="bg-white rounded-xl border border-gray-200 p-6"><h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>{children}</div>
 }
-
-function Field({
-  label, value, onChange, type = 'text', required = false, placeholder,
-}: {
-  label: string; value: string; onChange: (v: string) => void
-  type?: string; required?: boolean; placeholder?: string
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        placeholder={placeholder}
-        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-      />
-    </div>
-  )
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{children}</div>
+}
+function Input({ label, value, onChange, type = 'text', placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
+  return <div><label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} step={type === 'number' ? 'any' : undefined}
+      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" /></div>
+}
+function Textarea({ label, value, onChange, maxLength }: { label: string; value: string; onChange: (v: string) => void; maxLength?: number }) {
+  return <div className="mt-2"><label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <textarea value={value} onChange={(e) => onChange(e.target.value)} maxLength={maxLength} rows={3}
+      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary" />
+    {maxLength && <p className="text-xs text-gray-400 mt-1">{value.length}/{maxLength}</p>}</div>
+}
+function Sel({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: [string, string][] }) {
+  return <div><label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <select value={value} onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
+      <option value="">Seleccionar</option>
+      {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+    </select></div>
+}
+function Vis({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+  return <label className="flex items-center gap-2 mt-1 cursor-pointer">
+    <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+    <span className="text-xs text-gray-500">{label || 'Mostrar en perfil público'}</span>
+  </label>
+}
+function MultiCheck({ label, options, selected, onToggle }: { label: string; options: { value: string; label: string }[]; selected: string[]; onToggle: (v: string) => void }) {
+  return <div className="mt-4"><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {options.map(opt => (
+        <label key={opt.value} className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border cursor-pointer transition-colors ${selected.includes(opt.value) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200 hover:border-gray-300'}`}>
+          <input type="checkbox" checked={selected.includes(opt.value)} onChange={() => onToggle(opt.value)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+          <span className="text-sm">{opt.label}</span>
+        </label>
+      ))}
+    </div></div>
 }
