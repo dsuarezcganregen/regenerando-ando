@@ -30,29 +30,36 @@ export default function ExportarPage() {
 
   const exportProfiles = async (country?: string) => {
     setLoading(country || 'all')
+
     let query = supabase
-      .from('profiles')
-      .select('full_name, ranch_name, email, phone, description, status, created_at, locations(country, state_province, municipality, ecosystem, latitude, longitude), operations(total_hectares, regenerative_hectares, primary_system, business_type)')
+      .from('admin_pending_reviews')
+      .select('*')
       .eq('status', 'aprobado')
 
     if (country) {
-      query = query.eq('locations.country', country)
+      query = query.eq('country', country)
     }
 
     const { data } = await query
     if (data) {
-      const flat = data.map((p: any) => {
-        const loc = Array.isArray(p.locations) ? p.locations[0] : p.locations
-        const op = Array.isArray(p.operations) ? p.operations[0] : p.operations
-        return {
-          nombre: p.full_name, rancho: p.ranch_name, email: p.email, telefono: p.phone,
-          pais: loc?.country, estado: loc?.state_province, municipio: loc?.municipality,
-          ecosistema: loc?.ecosystem, latitud: loc?.latitude, longitud: loc?.longitude,
-          hectareas: op?.total_hectares, ha_regenerativas: op?.regenerative_hectares,
-          sistema: op?.primary_system, tipo_negocio: op?.business_type,
-          descripcion: p.description, fecha_registro: p.created_at,
-        }
-      })
+      const flat = data.map((p: any) => ({
+        nombre: p.full_name,
+        rancho: p.ranch_name,
+        email: p.email,
+        telefono: p.phone,
+        descripcion: p.description,
+        pais: p.country,
+        estado: p.state_province,
+        municipio: p.municipality,
+        latitud: p.latitude,
+        longitud: p.longitude,
+        ecosistema: p.ecosystem,
+        hectareas: p.total_hectares,
+        sistema: p.primary_system,
+        tipo_negocio: p.business_type,
+        anios_regenerativo: p.years_regenerative,
+        fecha_registro: p.created_at,
+      }))
       downloadCSV(flat, country ? `perfiles_${country}.csv` : 'perfiles_aprobados.csv')
     }
     setLoading('')
@@ -61,21 +68,24 @@ export default function ExportarPage() {
   const exportAnonymized = async () => {
     setLoading('anon')
     const { data } = await supabase
-      .from('profiles')
-      .select('status, created_at, locations(country, state_province, ecosystem), operations(total_hectares, regenerative_hectares, primary_system, business_type)')
+      .from('admin_pending_reviews')
+      .select('*')
       .eq('status', 'aprobado')
 
     if (data) {
-      const flat = data.map((p: any) => {
-        const loc = Array.isArray(p.locations) ? p.locations[0] : p.locations
-        const op = Array.isArray(p.operations) ? p.operations[0] : p.operations
-        return {
-          pais: loc?.country, estado: loc?.state_province, ecosistema: loc?.ecosystem,
-          hectareas: op?.total_hectares, ha_regenerativas: op?.regenerative_hectares,
-          sistema: op?.primary_system, tipo_negocio: op?.business_type,
-          fecha_registro: p.created_at,
-        }
-      })
+      const flat = data.map((p: any) => ({
+        pais: p.country,
+        estado: p.state_province,
+        municipio: p.municipality,
+        ecosistema: p.ecosystem,
+        latitud: p.latitude,
+        longitud: p.longitude,
+        hectareas: p.total_hectares,
+        sistema: p.primary_system,
+        tipo_negocio: p.business_type,
+        anios_regenerativo: p.years_regenerative,
+        fecha_registro: p.created_at,
+      }))
       downloadCSV(flat, 'datos_anonimizados.csv')
     }
     setLoading('')

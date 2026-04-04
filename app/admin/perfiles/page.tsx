@@ -6,7 +6,7 @@ const PAGE_SIZE = 20
 
 export const metadata = { title: 'Perfiles — Admin — Regenerando Ando' }
 
-export default async function PerfilesPage(props: { searchParams: Promise<{ status?: string; pais?: string; q?: string; page?: string }> }) {
+export default async function PerfilesPage(props: { searchParams: Promise<{ status?: string; pais?: string; q?: string; page?: string; incomplete?: string }> }) {
   const searchParams = await props.searchParams
   const supabase = await createClient()
   const status = searchParams.status || ''
@@ -22,6 +22,7 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
 
   if (status) query = query.eq('status', status)
   if (searchParams.pais) query = query.eq('country', searchParams.pais)
+  if (searchParams.incomplete === '1') query = query.is('ranch_name', null)
   if (searchParams.q) {
     query = query.or(`full_name.ilike.%${searchParams.q}%,ranch_name.ilike.%${searchParams.q}%`)
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -40,25 +40,18 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
   const [loading, setLoading] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [reason, setReason] = useState('')
-  const [search, setSearch] = useState(searchParams.q || '')
+  const [searchInput, setSearchInput] = useState(searchParams.q || '')
   const router = useRouter()
   const supabase = createClient()
   const canApprove = adminRole === 'super_admin' || adminRole === 'moderador'
 
-  const filtered = profiles
-    .filter((p) => {
-      if (!search.trim()) return true
-      const q = search.toLowerCase()
-      const cn = countryNames[p.country || '']?.toLowerCase() || ''
-      return (
-        (p.full_name || '').toLowerCase().includes(q) ||
-        (p.ranch_name || '').toLowerCase().includes(q) ||
-        (p.country || '').toLowerCase().includes(q) ||
-        cn.includes(q) ||
-        (p.state_province || '').toLowerCase().includes(q)
-      )
-    })
-    .sort((a: any, b: any) => (a.ranch_name || a.full_name || '').localeCompare(b.ranch_name || b.full_name || '', 'es'))
+  const doSearch = useCallback(() => {
+    const params = new URLSearchParams()
+    if (currentStatus) params.set('status', currentStatus)
+    if (searchParams.pais) params.set('pais', searchParams.pais)
+    if (searchInput.trim()) params.set('q', searchInput.trim())
+    router.push(`/admin/perfiles?${params.toString()}`)
+  }, [currentStatus, searchParams.pais, searchInput, router])
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected)
@@ -66,19 +59,15 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     setSelected(next)
   }
   const toggleAll = () => {
-    if (selected.size === filtered.length) setSelected(new Set())
-    else setSelected(new Set(filtered.map((p) => p.id)))
+    if (selected.size === profiles.length) setSelected(new Set())
+    else setSelected(new Set(profiles.map((p) => p.id)))
   }
 
   const handleBulkAction = async (newStatus: string, bulkReason?: string) => {
     if (selected.size === 0) return
     setLoading(true)
-    const actionMap: Record<string, string> = {
-      aprobado: 'aprobar_perfil', rechazado: 'rechazar_perfil', pendiente: 'devolver_pendiente',
-    }
-    const titles: Record<string, string> = {
-      aprobado: 'Tu perfil fue aprobado', rechazado: 'Tu perfil fue rechazado', pendiente: 'Tu perfil fue devuelto a revisión',
-    }
+    const actionMap: Record<string, string> = { aprobado: 'aprobar_perfil', rechazado: 'rechazar_perfil', pendiente: 'devolver_pendiente' }
+    const titles: Record<string, string> = { aprobado: 'Tu perfil fue aprobado', rechazado: 'Tu perfil fue rechazado', pendiente: 'Tu perfil fue devuelto a revisión' }
     for (const id of selected) {
       await supabase.rpc('admin_review_profile', { target_profile_id: id, new_status: newStatus, reason: bulkReason || null })
       await createNotification(supabase, id, `profile_${newStatus === 'aprobado' ? 'approved' : newStatus === 'rechazado' ? 'rejected' : 'pending'}`, titles[newStatus], bulkReason || '', id)
@@ -91,17 +80,37 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     router.refresh()
   }
 
+  // Build pagination URLs
+  const buildPageUrl = (page: number) => {
+    const params = new URLSearchParams()
+    if (currentStatus) params.set('status', currentStatus)
+    if (searchParams.pais) params.set('pais', searchParams.pais)
+    if (searchParams.q) params.set('q', searchParams.q)
+    if (page > 1) params.set('page', page.toString())
+    return `/admin/perfiles?${params.toString()}`
+  }
+
   return (
     <>
       {/* Search */}
-      <div className="mb-4">
+      <div className="mb-4 flex gap-2">
         <input
           type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && doSearch()}
           placeholder="Buscar por nombre, rancho, país..."
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
         />
+        <button onClick={doSearch} className="bg-primary text-white px-5 py-2.5 rounded-lg text-sm hover:bg-primary-dark shrink-0">
+          Buscar
+        </button>
+        {searchParams.q && (
+          <button onClick={() => { setSearchInput(''); router.push(`/admin/perfiles${currentStatus ? `?status=${currentStatus}` : ''}`) }}
+            className="text-sm text-gray-500 hover:text-primary shrink-0 py-2">
+            Limpiar
+          </button>
+        )}
       </div>
 
       {/* Bulk actions */}
@@ -111,21 +120,15 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
           <div className="flex flex-wrap gap-2">
             {currentStatus !== 'aprobado' && (
               <button onClick={() => handleBulkAction('aprobado')} disabled={loading}
-                className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">
-                Aprobar
-              </button>
+                className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50">Aprobar</button>
             )}
             {currentStatus !== 'pendiente' && (
               <button onClick={() => handleBulkAction('pendiente')} disabled={loading}
-                className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-yellow-600 disabled:opacity-50">
-                A pendiente
-              </button>
+                className="bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-yellow-600 disabled:opacity-50">A pendiente</button>
             )}
             {currentStatus !== 'rechazado' && (
               <button onClick={() => setShowRejectModal(true)} disabled={loading}
-                className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 disabled:opacity-50">
-                Rechazar
-              </button>
+                className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-red-700 disabled:opacity-50">Rechazar</button>
             )}
             <button onClick={() => setSelected(new Set())} className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-sm">Cancelar</button>
           </div>
@@ -134,7 +137,7 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
 
       {showRejectModal && (
         <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
-          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Motivo de rechazo..."
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Motivo..."
             className="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300" />
           <div className="flex gap-2">
             <button onClick={() => handleBulkAction('rechazado', reason)} disabled={loading || !reason.trim()}
@@ -146,12 +149,12 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
       )}
 
       {/* Select all */}
-      {canApprove && (
+      {canApprove && profiles.length > 0 && (
         <div className="mb-3">
           <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
-            <input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll}
+            <input type="checkbox" checked={selected.size === profiles.length && profiles.length > 0} onChange={toggleAll}
               className="rounded border-gray-300 text-primary focus:ring-primary" />
-            Seleccionar todos ({filtered.length})
+            Seleccionar todos en esta página ({profiles.length})
           </label>
         </div>
       )}
@@ -171,7 +174,7 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((p: any) => (
+              {profiles.map((p: any) => (
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   {canApprove && (
                     <td className="px-4 py-3">
@@ -185,23 +188,15 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
                       <p className="text-xs text-gray-500">{p.full_name}</p>
                     </Link>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-gray-600">
-                    {countryNames[p.country] || p.country || '—'}
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-gray-600">
-                    {systemLabels[p.primary_system] || p.primary_system || '—'}
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-gray-600">
-                    {p.total_hectares ? Number(p.total_hectares).toLocaleString('es-MX') : '—'}
-                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-gray-600">{countryNames[p.country] || p.country || '—'}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-gray-600">{systemLabels[p.primary_system] || p.primary_system || '—'}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-gray-600">{p.total_hectares ? Number(p.total_hectares).toLocaleString('es-MX') : '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[p.status] || ''}`}>
-                      {p.status}
-                    </span>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[p.status] || ''}`}>{p.status}</span>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {profiles.length === 0 && (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No se encontraron perfiles</td></tr>
               )}
             </tbody>
@@ -211,20 +206,48 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-4 flex justify-center gap-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-            const params = new URLSearchParams()
-            if (currentStatus) params.set('status', currentStatus)
-            if (searchParams.pais) params.set('pais', searchParams.pais)
-            if (searchParams.q) params.set('q', searchParams.q)
-            if (p > 1) params.set('page', p.toString())
-            return (
-              <Link key={p} href={`/admin/perfiles?${params.toString()}`}
+        <div className="mt-4 flex justify-center items-center gap-1 flex-wrap">
+          {/* Previous */}
+          {currentPage > 1 && (
+            <Link href={buildPageUrl(currentPage - 1)}
+              className="px-3 py-1.5 rounded-lg text-sm bg-white border border-gray-200 text-gray-600 hover:border-primary">
+              &larr;
+            </Link>
+          )}
+
+          {/* First page */}
+          {currentPage > 3 && (
+            <>
+              <Link href={buildPageUrl(1)} className="px-3 py-1.5 rounded-lg text-sm bg-white border border-gray-200 text-gray-600 hover:border-primary">1</Link>
+              {currentPage > 4 && <span className="px-2 text-gray-400">...</span>}
+            </>
+          )}
+
+          {/* Pages around current */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+            .map(p => (
+              <Link key={p} href={buildPageUrl(p)}
                 className={`px-3 py-1.5 rounded-lg text-sm ${p === currentPage ? 'bg-primary text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-primary'}`}>
                 {p}
               </Link>
-            )
-          })}
+            ))}
+
+          {/* Last page */}
+          {currentPage < totalPages - 2 && (
+            <>
+              {currentPage < totalPages - 3 && <span className="px-2 text-gray-400">...</span>}
+              <Link href={buildPageUrl(totalPages)} className="px-3 py-1.5 rounded-lg text-sm bg-white border border-gray-200 text-gray-600 hover:border-primary">{totalPages}</Link>
+            </>
+          )}
+
+          {/* Next */}
+          {currentPage < totalPages && (
+            <Link href={buildPageUrl(currentPage + 1)}
+              className="px-3 py-1.5 rounded-lg text-sm bg-white border border-gray-200 text-gray-600 hover:border-primary">
+              &rarr;
+            </Link>
+          )}
         </div>
       )}
     </>

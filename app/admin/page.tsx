@@ -47,18 +47,18 @@ export default async function AdminDashboardPage() {
 
       {/* Secondary stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <a href="/admin/perfiles?status=pendiente" className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all">
           <p className="text-2xl font-bold text-primary">{thisWeek || 0}</p>
           <p className="text-sm text-gray-500 mt-1">Nuevos esta semana</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        </a>
+        <a href="/admin/perfiles" className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all">
           <p className="text-2xl font-bold text-primary">{thisMonth || 0}</p>
           <p className="text-sm text-gray-500 mt-1">Nuevos este mes</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        </a>
+        <a href="/admin/perfiles?incomplete=1" className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all">
           <p className="text-2xl font-bold text-orange-600">{incomplete || 0}</p>
           <p className="text-sm text-gray-500 mt-1">Perfiles incompletos</p>
-        </div>
+        </a>
       </div>
 
       {/* Recent activity */}
