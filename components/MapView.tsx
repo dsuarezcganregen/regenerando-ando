@@ -89,12 +89,14 @@ export default function MapView({
               {marker.total_hectares && (
                 <p className="text-xs">{Number(marker.total_hectares).toLocaleString('es-MX')} ha</p>
               )}
-              <Link
-                href={`/rancho/${marker.slug}`}
-                className="text-xs text-primary hover:underline mt-2 inline-block"
-              >
-                Ver perfil &rarr;
-              </Link>
+              {marker.slug && (
+                <Link
+                  href={`/rancho/${marker.slug}`}
+                  className="text-xs text-primary hover:underline mt-2 inline-block"
+                >
+                  Ver perfil &rarr;
+                </Link>
+              )}
             </div>
           </Popup>
         </Marker>
