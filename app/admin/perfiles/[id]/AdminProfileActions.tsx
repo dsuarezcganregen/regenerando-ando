@@ -36,20 +36,16 @@ export default function AdminProfileActions({
     if (newStatus === 'aprobado' || newStatus === 'rechazado') {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        console.log('Email: session found:', !!session, 'token:', !!session?.access_token)
         if (session?.access_token) {
-          const emailResult = await sendTransactionalEmail({
+          await sendTransactionalEmail({
             type: newStatus === 'aprobado' ? 'approved' : 'rejected',
             profileId,
             reason: actionReason,
             token: session.access_token,
           })
-          console.log('Email result:', emailResult)
-        } else {
-          console.warn('No session/token available for email')
         }
-      } catch (emailErr) {
-        console.error('Email send error:', emailErr)
+      } catch {
+        // Email is non-blocking
       }
     }
     setLoading(false)

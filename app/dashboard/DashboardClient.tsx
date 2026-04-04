@@ -194,7 +194,7 @@ export default function DashboardClient(props: Props) {
 
           {props.growthData.length > 1 && (
             <div>
-              <h3 className="font-medium text-gray-800 mb-3">Crecimiento del movimiento</h3>
+              <h3 className="font-medium text-gray-800 mb-3">Crecimiento de la adopción</h3>
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <GrowthLine data={props.growthData} />
               </div>

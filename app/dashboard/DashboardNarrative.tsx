@@ -632,10 +632,10 @@ function DeepDiveSection({ deepDive }: { deepDive: Props['deepDive'] }) {
   return (
     <section className="py-20 sm:py-28 bg-gray-50">
       <div className="max-w-4xl mx-auto px-6">
-        <SectionHeader title="Para profundizar" subtitle="Más datos del movimiento regenerativo" />
+        <SectionHeader title="Para profundizar" subtitle="Más datos de la ganadería regenerativa" />
 
         <div className="mt-12 space-y-4">
-          <Accordion title="Crecimiento del movimiento">
+          <Accordion title="Crecimiento de la adopción">
             <div className="bg-white rounded-xl p-4 sm:p-6">
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={deepDive.growthData} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
