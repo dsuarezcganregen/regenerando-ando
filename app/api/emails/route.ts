@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import { createClient } from '@supabase/supabase-js'
 
-function getResend() {
-  const key = process.env.RESEND_API_KEY
-  if (!key) throw new Error('RESEND_API_KEY no configurada')
-  return new Resend(key)
+function getTransporter() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  })
 }
 
 function getSupabaseAdmin() {
@@ -15,8 +19,8 @@ function getSupabaseAdmin() {
   )
 }
 
-// Usar dominio verificado de Resend. Si tu dominio aún no verifica, usa 'onboarding@resend.dev'
-const FROM_EMAIL = process.env.FROM_EMAIL || 'Regenerando Ando <onboarding@resend.dev>'
+const FROM_EMAIL = process.env.SMTP_USER || 'daniel@regenerandoando.com'
+const FROM_NAME = 'Regenerando Ando'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'daniel@regenerandoando.com'
 
 export async function POST(request: NextRequest) {
@@ -24,7 +28,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { type, profileId, reason, token } = body
 
-    // Verify the request comes from an authenticated admin
     if (!token) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
@@ -60,39 +63,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 })
     }
 
-    let emailResult
+    const transporter = getTransporter()
 
     switch (type) {
       case 'approved':
-        emailResult = await sendApprovedEmail(profile)
+        await sendApprovedEmail(transporter, profile)
         break
       case 'rejected':
-        emailResult = await sendRejectedEmail(profile, reason)
+        await sendRejectedEmail(transporter, profile, reason)
         break
       case 'welcome':
-        emailResult = await sendWelcomeEmail(profile)
+        await sendWelcomeEmail(transporter, profile)
         break
       case 'new_registration':
-        emailResult = await sendNewRegistrationToAdmin(profile)
+        await sendNewRegistrationToAdmin(transporter, profile)
         break
       default:
         return NextResponse.json({ error: 'Tipo de email no válido' }, { status: 400 })
     }
 
-    return NextResponse.json({ success: true, id: emailResult?.data?.id })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error sending email:', error)
     return NextResponse.json({ error: 'Error al enviar email' }, { status: 500 })
   }
 }
 
-// ===================== EMAIL TEMPLATES =====================
+// ===================== EMAIL FUNCTIONS =====================
 
-async function sendApprovedEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+async function sendApprovedEmail(transporter: nodemailer.Transporter, profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
   const profileUrl = `https://regenerandoando.com/rancho/${profile.slug}`
 
-  return getResend().emails.send({
-    from: FROM_EMAIL,
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     to: profile.email,
     subject: '✅ ¡Tu perfil en Regenerando Ando fue aprobado!',
     html: baseTemplate(`
@@ -121,9 +124,9 @@ async function sendApprovedEmail(profile: { full_name: string; email: string; ra
   })
 }
 
-async function sendRejectedEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }, reason?: string) {
-  return getResend().emails.send({
-    from: FROM_EMAIL,
+async function sendRejectedEmail(transporter: nodemailer.Transporter, profile: { full_name: string; email: string; ranch_name: string; slug: string }, reason?: string) {
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     to: profile.email,
     subject: '⚠️ Tu perfil en Regenerando Ando necesita correcciones',
     html: baseTemplate(`
@@ -154,9 +157,9 @@ async function sendRejectedEmail(profile: { full_name: string; email: string; ra
   })
 }
 
-async function sendWelcomeEmail(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
-  return getResend().emails.send({
-    from: FROM_EMAIL,
+async function sendWelcomeEmail(transporter: nodemailer.Transporter, profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     to: profile.email,
     subject: '🌱 Bienvenido a Regenerando Ando',
     html: baseTemplate(`
@@ -188,9 +191,9 @@ async function sendWelcomeEmail(profile: { full_name: string; email: string; ran
   })
 }
 
-async function sendNewRegistrationToAdmin(profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
-  return getResend().emails.send({
-    from: FROM_EMAIL,
+async function sendNewRegistrationToAdmin(transporter: nodemailer.Transporter, profile: { full_name: string; email: string; ranch_name: string; slug: string }) {
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
     to: ADMIN_EMAIL,
     subject: `📋 Nuevo registro: ${profile.full_name} — ${profile.ranch_name || 'Sin nombre de rancho'}`,
     html: baseTemplate(`
