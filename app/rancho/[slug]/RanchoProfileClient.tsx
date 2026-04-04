@@ -15,9 +15,9 @@ const speciesLabels: Record<string, string> = {
   abejas:'Abejas',otro:'Otro',
 }
 const ecoShort: Record<string, string> = {
-  bosque_tropical_humedo:'BTH',bosque_tropical_seco:'BTS',bosque_templado:'Bosque templado',
-  pastizal:'Pastizal',sabana:'Sabana',matorral_xerofilo:'Semiárido',semidesierto:'Semiárido',
-  sistema_agroforestal:'Agroforestal',humedal:'Humedal',otro:'Otro',
+  bosque_tropical_humedo:'Bosque tropical húmedo',bosque_tropical_seco:'Bosque tropical seco',bosque_templado:'Bosque templado',
+  pastizal:'Pastizal',sabana:'Sabana',matorral_xerofilo:'Matorral xerófilo',semidesierto:'Semidesierto',
+  sistema_agroforestal:'Sistema agroforestal',humedal:'Humedal',otro:'Otro',
 }
 const resultIcons: Record<string, string> = {
   mejorado:'📈',sin_cambios:'➡️',empeorado:'📉',mejor:'📈',igual:'➡️',peor:'📉',
