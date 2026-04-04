@@ -9,14 +9,23 @@ import PhotoUploader from '@/components/PhotoUploader'
 
 const LocationPicker = dynamic(() => import('@/components/LocationPicker'), { ssr: false })
 
-const systemOptions = [
+const strategyOptions = [
   { value: 'prv', label: 'PRV (Pastoreo Racional Voisin)' },
   { value: 'manejo_holistico', label: 'Manejo Holístico' },
   { value: 'puad', label: 'PUAD' },
   { value: 'silvopastoril', label: 'Silvopastoril' },
-  { value: 'stre', label: 'STRE' },
   { value: 'pastoreo_racional', label: 'Pastoreo Racional' },
   { value: 'otro', label: 'Otro' },
+]
+const breedOptions = [
+  'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
+  'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
+  'Holstein','Jersey','Normando','Montbéliarde',
+  'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
+  'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
+  'Senepol','Bonsmara','Tuli',
+  'Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire',
+  'Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana',
 ]
 const businessOptions = [
   { value: 'cria', label: 'Cría' },{ value: 'desarrollo', label: 'Desarrollo' },
@@ -89,13 +98,15 @@ export default function RegistroWizardPage() {
   // === STEP 3 ===
   const [totalHectares, setTotalHectares] = useState('')
   const [regenHectares, setRegenHectares] = useState('')
-  const [yearsRanching, setYearsRanching] = useState('')
-  const [yearsRegen, setYearsRegen] = useState('')
+  const [yearStartedRanching, setYearStartedRanching] = useState('')
   const [yearStartedRegen, setYearStartedRegen] = useState('')
+  const [generationRanching, setGenerationRanching] = useState('')
   const [headCount, setHeadCount] = useState('')
-  const [breeds, setBreeds] = useState('')
+  const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
+  const [breedOther, setBreedOther] = useState('')
   const [previousModel, setPreviousModel] = useState('')
-  const [systems, setSystems] = useState<string[]>([])
+  const [strategies, setStrategies] = useState<string[]>([])
+  const [strategyOther, setStrategyOther] = useState('')
   const [businessTypes, setBusinessTypes] = useState<string[]>([])
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([])
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
@@ -241,7 +252,7 @@ export default function RegistroWizardPage() {
         if (!stateProvince.trim()) return fail('Estado/provincia es requerido')
         return true
       case 3:
-        if (systems.length === 0) return fail('Selecciona al menos un sistema de manejo')
+        if (strategies.length === 0) return fail('Selecciona al menos una estrategia de manejo')
         return true
       case 5:
         if (!practicesDesc.trim()) return fail('Describe tus prácticas regenerativas')
@@ -302,11 +313,12 @@ export default function RegistroWizardPage() {
       profile_id: userId,
       total_hectares: totalHectares ? parseFloat(totalHectares) : null,
       regenerative_hectares: regenHectares ? parseFloat(regenHectares) : null,
-      years_ranching: yearsRanching ? parseInt(yearsRanching) : null,
-      years_regenerative: yearsRegen ? parseInt(yearsRegen) : null,
+      year_started_ranching: yearStartedRanching ? parseInt(yearStartedRanching) : null,
       year_started_regen: yearStartedRegen ? parseInt(yearStartedRegen) : null,
+      generation_ranching: generationRanching || null,
       head_count: headCount ? parseInt(headCount) : null,
-      primary_system: systems[0] || null, systems, business_type: businessTypes[0] || null, business_types: businessTypes,
+      primary_system: strategies[0] || null, systems: strategies, business_type: businessTypes[0] || null, business_types: businessTypes,
+      strategy_other: strategies.includes('otro') ? strategyOther : null,
       advisor_name: hasAdvisor === 'si' ? advisorName : null,
       association_name: hasAssociation === 'si' ? associationName : null,
       previous_business_model: previousModel || null,
@@ -318,7 +330,8 @@ export default function RegistroWizardPage() {
     // Species
     await supabase.from('ranch_species').delete().eq('profile_id', userId)
     if (selectedSpecies.length > 0) {
-      await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breeds || null })))
+      const breedsStr = [...selectedBreeds, ...(breedOther ? [breedOther] : [])].join(', ')
+      await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breedsStr || null })))
     }
 
     // Management practices
@@ -502,16 +515,33 @@ export default function RegistroWizardPage() {
             <Grid>
               <Input label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
               <Input label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
-              <Input label="Años en ganadería" type="number" value={yearsRanching} onChange={setYearsRanching} />
-              <Input label="Años con prácticas regenerativas" type="number" value={yearsRegen} onChange={setYearsRegen} />
+              <Input label="Año de inicio en ganadería" type="number" value={yearStartedRanching} onChange={setYearStartedRanching} placeholder="Ej: 1995" />
               <Input label="Año de inicio con ganadería regenerativa" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
+              <Sel label="Generación en ganadería" value={generationRanching} onChange={setGenerationRanching}
+                options={[['primera','Primera generación'],['segunda','Segunda generación'],['tercera','Tercera generación'],['cuarta_o_mas','Cuarta generación o más']]} />
               <Input label="Número de cabezas aproximado" type="number" value={headCount} onChange={setHeadCount} />
-              <Input label="Razas principales" value={breeds} onChange={setBreeds} placeholder="Ej: Brahman, Criollo, Holstein..." />
               <Input label="Modelo de negocio previo" value={previousModel} onChange={setPreviousModel} placeholder="¿Cómo manejabas tu rancho antes?" />
             </Grid>
-            <MultiCheck label="Sistema(s) de manejo *" options={systemOptions} selected={systems} onToggle={(v) => toggle(systems, v, setSystems)} />
+
+            <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
+            {strategies.includes('otro') && <Input label="Especifica la estrategia" value={strategyOther} onChange={setStrategyOther} />}
+
             <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
             <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Razas principales</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                {breedOptions.map(b => (
+                  <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedBreeds.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
+                    <input type="checkbox" checked={selectedBreeds.includes(b)} onChange={() => toggle(selectedBreeds, b, setSelectedBreeds)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                    {b}
+                  </label>
+                ))}
+              </div>
+              <Input label="Otra(s) raza(s)" value={breedOther} onChange={setBreedOther} placeholder="Razas no listadas arriba" />
+            </div>
+
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Productos que vendes</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -536,10 +566,10 @@ export default function RegistroWizardPage() {
 
             <Section title="Manejo de pastoreo">
               <Grid>
-                <Input label="Tiempo promedio de ocupación (días)" type="number" value={avgOccupationDays} onChange={setAvgOccupationDays} />
+                <Input label="Tiempo máximo de ocupación de un potrero (días)" type="number" value={avgOccupationDays} onChange={setAvgOccupationDays} />
                 <Input label="Densidad de pastoreo (UA/ha)" type="number" value={grazingDensity} onChange={setGrazingDensity} />
-                <Input label="Cambios de potrero (día más intensivo)" type="number" value={paddockChangesMax} onChange={setPaddockChangesMax} />
-                <Input label="Cambios de potrero regulares" type="number" value={paddockChangesRegular} onChange={setPaddockChangesRegular} />
+                <Input label="Cambios de potrero por día (en los días más intensivos)" type="number" value={paddockChangesMax} onChange={setPaddockChangesMax} />
+                <Input label="Cambios de potrero regulares por día" type="number" value={paddockChangesRegular} onChange={setPaddockChangesRegular} />
               </Grid>
             </Section>
 
@@ -606,7 +636,7 @@ export default function RegistroWizardPage() {
 
             <Section title="Valoración final">
               <Grid>
-                <Sel label="¿Eliminarías lo regenerativo?" value={wouldEliminate} onChange={setWouldEliminate} options={[['si','Sí'],['no','No']]} />
+                <Sel label="¿Eliminarías las prácticas regenerativas de tu operación?" value={wouldEliminate} onChange={setWouldEliminate} options={[['si','Sí'],['no','No']]} />
                 <Sel label="¿Lo recomendarías?" value={wouldRecommend} onChange={setWouldRecommend} options={[['si_total','Sí, a ojo cerrado'],['si_reservas','Sí, con reservas'],['no','No']]} />
               </Grid>
               {wouldEliminate && <Input label="¿Por qué?" value={whyWouldOrNot} onChange={setWhyWouldOrNot} />}
@@ -732,10 +762,21 @@ export default function RegistroWizardPage() {
                   <Input label="Email o teléfono" value={invContact} onChange={setInvContact} />
                 </Grid>
                 <Textarea label="Mensaje" value={invMessage} onChange={setInvMessage} />
-                <button onClick={sendInvitation} disabled={!invName.trim() || !invContact.trim()}
-                  className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50">
-                  Enviar invitación
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button onClick={sendInvitation} disabled={!invName.trim() || !invContact.trim()}
+                    className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50">
+                    Enviar invitación
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent('Hola, te invito a registrar tu rancho en Regenerando Ando, el directorio mundial de ganaderos regenerativos. Es gratuito y es una forma de hacer visible nuestro trabajo. Regístrate en https://regenerando-ando.vercel.app/auth/registro')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-[#25D366] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-[#1DA851] flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Invitar por WhatsApp
+                  </a>
+                </div>
               </div>
             </Section>
 
