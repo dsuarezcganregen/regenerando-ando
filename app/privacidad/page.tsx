@@ -25,8 +25,8 @@ export default function PrivacidadPage() {
               <strong>Regenerando Ando</strong> (regenerandoando.com) es un proyecto creado y operado por
               Daniel Suárez a través de GanaderiaRegenerativa.com. Para cualquier consulta relacionada
               con tus datos personales, puedes contactarnos en:{' '}
-              <a href="mailto:daniel@ganaderiaregenerativa.com" className="text-primary hover:underline">
-                daniel@ganaderiaregenerativa.com
+              <a href="mailto:daniel@regenerandoando.com" className="text-primary hover:underline">
+                daniel@regenerandoando.com
               </a>
             </p>
           </section>
@@ -70,6 +70,11 @@ export default function PrivacidadPage() {
               Si no das tu consentimiento o tu perfil está pendiente de revisión, tu información
               <strong> no será visible públicamente</strong>.
             </p>
+            <p className="mt-2">
+              Regenerando Ando se reserva el derecho de admisión. Todos los perfiles son revisados
+              antes de su publicación y podemos rechazar o retirar cualquier perfil que no cumpla
+              con los criterios del directorio.
+            </p>
           </section>
 
           <section>
@@ -92,7 +97,6 @@ export default function PrivacidadPage() {
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li><strong>Supabase</strong> (almacenamiento de datos y autenticación) — servidores en EE.UU.</li>
               <li><strong>Vercel</strong> (hosting de la aplicación) — servidores globales.</li>
-              <li><strong>Cloudflare</strong> (DNS y seguridad) — servidores globales.</li>
               <li><strong>OpenStreetMap / Nominatim</strong> (mapas y geocodificación) — servicio público.</li>
             </ul>
           </section>
@@ -123,8 +127,8 @@ export default function PrivacidadPage() {
             </ul>
             <p className="mt-2">
               Para ejercer cualquiera de estos derechos, contacta a:{' '}
-              <a href="mailto:daniel@ganaderiaregenerativa.com" className="text-primary hover:underline">
-                daniel@ganaderiaregenerativa.com
+              <a href="mailto:daniel@regenerandoando.com" className="text-primary hover:underline">
+                daniel@regenerandoando.com
               </a>
             </p>
           </section>
@@ -168,8 +172,8 @@ export default function PrivacidadPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">13. Contacto</h2>
             <p>
               Si tienes preguntas sobre esta política o sobre el tratamiento de tus datos, escríbenos a:{' '}
-              <a href="mailto:daniel@ganaderiaregenerativa.com" className="text-primary hover:underline">
-                daniel@ganaderiaregenerativa.com
+              <a href="mailto:daniel@regenerandoando.com" className="text-primary hover:underline">
+                daniel@regenerandoando.com
               </a>
             </p>
           </section>

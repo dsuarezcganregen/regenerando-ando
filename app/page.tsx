@@ -59,95 +59,79 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Qué es Regenerando Ando */}
+      {/* Por qué registrarte */}
       <section className="py-16 sm:py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
+            ¿Por qué registrar tu rancho?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <BenefitCard
+              icon="🌐"
+              title="Tu rancho, visible para el mundo"
+              description="Tu perfil es tu propia página pública donde muestras tu rancho, tu sistema de manejo, tus resultados y tu historia. Cualquier persona puede encontrarte y contactarte."
+            />
+            <BenefitCard
+              icon="📊"
+              title="Tus resultados quedan documentados"
+              description="Capacidad de carga, cobertura del suelo, biodiversidad, rentabilidad... Tu experiencia queda registrada con datos reales que hablan por ti."
+            />
+            <BenefitCard
+              icon="🤝"
+              title="Conecta con otros ganaderos"
+              description="Encuentra ganaderos en tu mismo ecosistema, país o sistema de manejo. Comparte experiencias y aprende de quienes enfrentan retos similares."
+            />
+            <BenefitCard
+              icon="🌱"
+              title="Ayuda a masificar la ganadería regenerativa"
+              description="Cada rancho registrado es una prueba más de que la ganadería regenerativa funciona. Entre más ganaderos documentados, más fuerte es la evidencia para que otros se animen a adoptarla. El objetivo: que algún día ya no haga falta llamarle &quot;regenerativa&quot;."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Qué es Regenerando Ando */}
+      <section className="py-16 sm:py-24 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
             ¿Qué es <span className="text-primary">regenerando</span><span className="text-secondary">ando</span>?
           </h2>
           <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
             <p>
-              <strong className="text-gray-900">Regenerando Ando</strong> es el primer directorio mundial dedicado
-              exclusivamente a ganaderos regenerativos. Un proyecto creado por{" "}
+              El primer directorio mundial dedicado exclusivamente a ganaderos regenerativos.
+              Un proyecto de{" "}
               <a href="https://ganaderiaregenerativa.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                Daniel Suárez
+                GanaderiaRegenerativa.com
               </a>{" "}
-              desde GanaderiaRegenerativa.com con el objetivo de documentar, visibilizar y conectar
-              a quienes ya están transformando la ganadería en el mundo.
+              para documentar, visibilizar y conectar a quienes ya están transformando
+              la ganadería en el mundo.
             </p>
             <p>
               No es una red social ni un marketplace. Es una herramienta de documentación
-              y visibilización para demostrar, con datos reales de ganaderos reales, que la
-              ganadería regenerativa funciona en distintos ecosistemas, climas, escalas y países.
+              y visibilización: datos reales, de ganaderos reales, en distintos ecosistemas,
+              climas, escalas y países. Tú decides cuánto compartir, desde lo básico hasta
+              tus resultados más detallados.
+            </p>
+            <p className="text-gray-700 font-medium">
+              Cada perfil pasa por un proceso de revisión antes de publicarse. Nos reservamos
+              el derecho de admisión para asegurar que el directorio refleje exclusivamente
+              a ganaderos que practican ganadería regenerativa.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Objetivos */}
-      <section className="py-16 sm:py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
-            ¿Para qué sirve este directorio?
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ObjectiveCard
-              icon="🌍"
-              title="Visibilizar al movimiento"
-              description="Poner en el mapa a los ganaderos que ya practican ganadería regenerativa. Que el mundo sepa cuántos son, dónde están y qué están logrando."
-            />
-            <ObjectiveCard
-              icon="📊"
-              title="Documentar resultados reales"
-              description="Recopilar datos de capacidad de carga, biodiversidad, cobertura del suelo, rentabilidad y más. Evidencia real, de campo, de ganaderos reales."
-            />
-            <ObjectiveCard
-              icon="🤝"
-              title="Conectar ganaderos"
-              description="Facilitar que ganaderos de diferentes países y ecosistemas se encuentren, compartan experiencias y aprendan unos de otros."
-            />
-            <ObjectiveCard
-              icon="🔬"
-              title="Generar evidencia"
-              description="Construir la base de datos más grande del mundo sobre ganadería regenerativa. Datos que sirvan para investigación, políticas públicas y toma de decisiones."
-            />
-            <ObjectiveCard
-              icon="🗺️"
-              title="Demostrar que funciona en todos lados"
-              description="Desde trópico húmedo hasta zonas áridas. Desde 5 hectáreas hasta 10,000. La ganadería regenerativa se adapta a cualquier contexto."
-            />
-            <ObjectiveCard
-              icon="📢"
-              title="Dar voz a los ganaderos"
-              description="Cada perfil es una mini landing page donde el ganadero cuenta su historia, muestra sus resultados y puede ser contactado directamente."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Qué información se recopila */}
+      {/* Cómo funciona */}
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
-            ¿Qué información se documenta?
+            ¿Cómo funciona?
           </h2>
-          <div className="space-y-6">
-            <InfoItem
-              title="Datos generales"
-              items={["Nombre del rancho y ganadero", "Ubicación (país, estado, municipio, coordenadas)", "Ecosistema, altitud, precipitación"]}
-            />
-            <InfoItem
-              title="La operación ganadera"
-              items={["Hectáreas totales y bajo manejo regenerativo", "Años de experiencia", "Sistema de manejo (PRV, Manejo Holístico, PUAD, Silvopastoril, etc.)", "Especies y razas manejadas", "Tipo de negocio y productos"]}
-            />
-            <InfoItem
-              title="Prácticas de manejo"
-              items={["Prácticas implementadas (pastoreo no selectivo, silvopastoril, selección genética, etc.)", "Prácticas eliminadas (agrotóxicos, mecanización, fuego, etc.)", "Manejo del agua y cosecha de agua"]}
-            />
-            <InfoItem
-              title="Resultados medibles"
-              items={["Capacidad de carga antes y después", "Mejora en materia orgánica y cobertura del suelo", "Aumento de biodiversidad", "Cambios en rentabilidad y dinámica de trabajo", "Testimonial del ganadero"]}
-            />
+          <div className="space-y-8">
+            <Step number={1} title="Regístrate" description="Crea tu cuenta en menos de un minuto. Es gratis y siempre lo será." />
+            <Step number={2} title="Completa tu perfil" description="Llena la información de tu rancho: ubicación, sistema de manejo, especies, hectáreas y más. Tú decides cuánto compartir." />
+            <Step number={3} title="Revisión y aprobación" description="Nuestro equipo revisa la información para asegurar la calidad del directorio. Te notificamos cuando tu perfil esté publicado." />
+            <Step number={4} title="Tu perfil público" description="Tu rancho aparece en el directorio, el mapa interactivo y contribuye a la evidencia global de la ganadería regenerativa." />
           </div>
         </div>
       </section>
@@ -177,21 +161,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Cómo funciona */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
-            ¿Cómo funciona?
-          </h2>
-          <div className="space-y-8">
-            <Step number={1} title="Regístrate" description="Crea tu cuenta en menos de un minuto. Es gratis y siempre lo será." />
-            <Step number={2} title="Completa tu perfil" description="Llena la información de tu rancho: ubicación, sistema de manejo, especies, hectáreas y más. Tú decides cuánto compartir." />
-            <Step number={3} title="Revisión y aprobación" description="Nuestro equipo revisa la información para asegurar la calidad del directorio. Te notificamos cuando tu perfil esté publicado." />
-            <Step number={4} title="Tu perfil público" description="Tu rancho aparece en el directorio, el mapa interactivo y contribuye a las estadísticas globales de la ganadería regenerativa." />
-          </div>
-        </div>
-      </section>
-
       {/* Quién está detrás */}
       <section className="py-16 sm:py-24 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -206,7 +175,8 @@ export default async function Home() {
             , fundador de GanaderiaRegenerativa.com, la comunidad de ganadería regenerativa
             más grande en español. Con años documentando y acompañando ganaderos en su
             transición hacia sistemas regenerativos, este directorio nace de la necesidad
-            de tener un lugar centralizado donde el movimiento pueda verse reflejado con datos reales.
+            de tener un lugar centralizado donde los ganaderos que ya practican ganadería
+            regenerativa puedan verse reflejados con datos reales.
           </p>
         </div>
       </section>
@@ -245,32 +215,12 @@ export default async function Home() {
 
 // ==================== COMPONENTS ====================
 
-function ObjectiveCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+function BenefitCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="text-3xl mb-4">{icon}</div>
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-    </div>
-  )
-}
-
-function InfoItem({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="bg-gray-50 rounded-xl p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
-      <ul className="space-y-1.5">
-        {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-gray-600">
-            <span className="text-primary mt-1 shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
