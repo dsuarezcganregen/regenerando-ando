@@ -411,6 +411,26 @@ export default function RegistroWizardPage() {
       await supabase.from('no_references_explanation').upsert({ profile_id: userId, how_learned: howLearned }, { onConflict: 'profile_id' })
     }
 
+    // Link invitation ref if present
+    try {
+      const refCode = typeof window !== 'undefined' ? localStorage.getItem('ra_ref') : null
+      if (refCode) {
+        const res = await fetch(`/api/invitations/${refCode}`)
+        const refData = await res.json()
+        if (refData.valid) {
+          // Update profile with invited_by (via API since we need to look up inviter)
+          await fetch('/api/invitations/link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refCode, profileId: userId }),
+          })
+        }
+        localStorage.removeItem('ra_ref')
+      }
+    } catch {
+      // non-blocking
+    }
+
     await notifyAdmins(supabase, 'profile_edited', `${ranchName || fullName} completó su registro`, `Nuevo ganadero: ${fullName} (${ranchName}). Revisar para aprobar.`, userId)
 
     setSaving(false)

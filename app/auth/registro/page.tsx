@@ -1,12 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import SocialLoginButtons from '@/components/SocialLoginButtons'
 import { sendTransactionalEmail } from '@/lib/send-email'
 
 export default function RegistroPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><span className="text-gray-400">Cargando...</span></div>}>
+      <RegistroContent />
+    </Suspense>
+  )
+}
+
+function RegistroContent() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -14,7 +23,39 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [referrerInfo, setReferrerInfo] = useState<{ name: string; ranch: string } | null>(null)
   const supabase = createClient()
+  const searchParams = useSearchParams()
+
+  // Capture ref code from URL and store in localStorage
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      localStorage.setItem('ra_ref', ref)
+      // Validate and show referrer info
+      fetch(`/api/invitations/${ref}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.valid) {
+            setReferrerInfo({ name: data.inviterName, ranch: data.inviterRanch })
+          }
+        })
+        .catch(() => {})
+    } else {
+      // Check if there's a stored ref
+      const storedRef = localStorage.getItem('ra_ref')
+      if (storedRef) {
+        fetch(`/api/invitations/${storedRef}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.valid) {
+              setReferrerInfo({ name: data.inviterName, ranch: data.inviterRanch })
+            }
+          })
+          .catch(() => {})
+      }
+    }
+  }, [searchParams])
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,6 +156,15 @@ export default function RegistroPage() {
             Únete al directorio mundial de ganaderos regenerativos
           </p>
         </div>
+
+        {referrerInfo && (
+          <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+            <p className="text-sm text-green-800">
+              Fuiste invitado por <strong>{referrerInfo.name}</strong>
+              {referrerInfo.ranch ? ` de ${referrerInfo.ranch}` : ''}
+            </p>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
           <SocialLoginButtons />

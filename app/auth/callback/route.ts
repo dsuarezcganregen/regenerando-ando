@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const ref = searchParams.get('ref')
 
   if (code) {
     const supabase = await createClient()

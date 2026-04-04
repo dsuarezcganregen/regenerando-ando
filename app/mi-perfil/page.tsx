@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
 import DeleteAccountButton from '@/components/DeleteAccountButton'
+import InviteSection from '@/components/InviteSection'
 
 export const metadata = {
   title: 'Mi Perfil — Regenerando Ando',
@@ -154,6 +155,16 @@ export default async function MiPerfilPage() {
             <p className="text-sm text-gray-500 mt-1">Comunícate con el administrador</p>
           </Link>
         </div>
+
+        {/* Invitaciones - solo para aprobados */}
+        {profile.status === 'aprobado' && (
+          <div className="mt-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              📨 Invita ganaderos
+            </h2>
+            <InviteSection />
+          </div>
+        )}
 
         {/* Logout & Delete */}
         <div className="mt-6 flex items-center justify-between">
