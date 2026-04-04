@@ -157,21 +157,35 @@ export default async function Home() {
 
       {/* Quién está detrás */}
       <section className="py-16 sm:py-24 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
             ¿Quién está detrás?
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
-            Este proyecto es creado y mantenido por{" "}
-            <a href="https://ganaderiaregenerativa.com" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
-              Daniel Suárez
-            </a>
-            , fundador de GanaderiaRegenerativa.com, la comunidad de ganadería regenerativa
-            más grande en español. Con años documentando y acompañando ganaderos en su
-            transición hacia sistemas regenerativos, este directorio nace de la necesidad
-            de tener un lugar centralizado donde los ganaderos que ya practican ganadería
-            regenerativa puedan verse reflejados con datos reales.
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            <div className="shrink-0">
+              <img
+                src="/daniel-suarez-opt.jpg"
+                alt="Daniel Suárez — Fundador de Regenerando Ando y GanaderiaRegenerativa.com"
+                className="w-64 h-64 sm:w-72 sm:h-72 rounded-2xl object-cover shadow-lg"
+              />
+            </div>
+            <div className="text-center md:text-left">
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Este proyecto es creado y mantenido por{" "}
+                <a href="https://ganaderiaregenerativa.com" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+                  Daniel Suárez
+                </a>
+                , fundador de GanaderiaRegenerativa.com, la comunidad de ganadería regenerativa
+                más grande en español.
+              </p>
+              <p className="mt-4 text-lg text-gray-600 leading-relaxed">
+                Con años documentando y acompañando ganaderos en su
+                transición hacia sistemas regenerativos, este directorio nace de la necesidad
+                de tener un lugar centralizado donde los ganaderos que ya practican ganadería
+                regenerativa puedan verse reflejados con datos reales.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
