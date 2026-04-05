@@ -14,7 +14,9 @@ export default function AdminProfileActions({
 }) {
   const [loading, setLoading] = useState(false)
   const [showReject, setShowReject] = useState(false)
+  const [showPending, setShowPending] = useState(false)
   const [reason, setReason] = useState('')
+  const [pendingReason, setPendingReason] = useState('')
   const [showDelete, setShowDelete] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const router = useRouter()
@@ -84,13 +86,13 @@ export default function AdminProfileActions({
             </button>
           )}
           {canApprove && currentStatus !== 'pendiente' && (
-            <button onClick={() => doAction('pendiente')} disabled={loading}
+            <button onClick={() => { setShowPending(!showPending); setShowReject(false) }} disabled={loading}
               className="bg-yellow-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50">
               A pendiente
             </button>
           )}
           {canApprove && currentStatus !== 'rechazado' && (
-            <button onClick={() => setShowReject(!showReject)} disabled={loading}
+            <button onClick={() => { setShowReject(!showReject); setShowPending(false) }} disabled={loading}
               className="bg-red-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50">
               Rechazar
             </button>
@@ -104,6 +106,17 @@ export default function AdminProfileActions({
             </button>
           )}
         </div>
+
+        {showPending && (
+          <div className="mt-4 space-y-3">
+            <textarea value={pendingReason} onChange={(e) => setPendingReason(e.target.value)} rows={3} placeholder="Motivo (opcional) — ej: Falta información de ubicación, fotos, etc."
+              className="w-full px-4 py-2.5 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300" />
+            <button onClick={() => { doAction('pendiente', pendingReason); setShowPending(false) }} disabled={loading}
+              className="bg-yellow-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50">
+              Confirmar devolver a pendiente
+            </button>
+          </div>
+        )}
 
         {showReject && (
           <div className="mt-4 space-y-3">
