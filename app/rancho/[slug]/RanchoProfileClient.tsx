@@ -234,14 +234,7 @@ export default function RanchoProfileClient({ ranch, countryNames }: { ranch: an
           </>
         )}
 
-        {/* SECTION 8: Practices */}
-        {exp?.practices_description && (
-          <>
-            <SectionLabel>¿Qué hace y por qué es regenerativo?</SectionLabel>
-            <p className="text-sm text-gray-700 leading-relaxed mb-6">{exp.practices_description}</p>
-            <Hr />
-          </>
-        )}
+        {/* SECTION 8: Practices — hidden from public profile */}
 
         {/* Gallery section removed — all photos shown in hero */}
 
