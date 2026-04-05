@@ -14,10 +14,10 @@ export default async function AdminDashboardPage() {
     { count: thisMonth },
     { count: incomplete },
   ] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pendiente'),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pendiente').not('ranch_name', 'is', null),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'aprobado'),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'rechazado'),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).not('ranch_name', 'is', null),
     supabase.from('profiles').select('*', { count: 'exact', head: true })
       .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
     supabase.from('profiles').select('*', { count: 'exact', head: true })
