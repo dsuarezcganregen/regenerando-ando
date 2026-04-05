@@ -33,12 +33,13 @@ export default function AdminProfileActions({
     await logAdminAction(supabase, actionMap[newStatus], profileId, actionReason || `Perfil: ${profileName}`)
 
     // Send email notification
-    if (newStatus === 'aprobado' || newStatus === 'rechazado') {
+    if (newStatus === 'aprobado' || newStatus === 'rechazado' || newStatus === 'pendiente') {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.access_token) {
+          const emailType = newStatus === 'aprobado' ? 'approved' : newStatus === 'rechazado' ? 'rejected' : 'returned_pending'
           await sendTransactionalEmail({
-            type: newStatus === 'aprobado' ? 'approved' : 'rejected',
+            type: emailType,
             profileId,
             reason: actionReason,
             token: session.access_token,

@@ -8,7 +8,7 @@ export async function sendTransactionalEmail({
   reason,
   token,
 }: {
-  type: 'approved' | 'rejected' | 'welcome' | 'new_registration'
+  type: 'approved' | 'rejected' | 'returned_pending' | 'welcome' | 'new_registration'
   profileId: string
   reason?: string
   token: string

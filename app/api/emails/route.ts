@@ -72,6 +72,9 @@ export async function POST(request: NextRequest) {
       case 'rejected':
         await sendRejectedEmail(transporter, profile, reason)
         break
+      case 'returned_pending':
+        await sendReturnedPendingEmail(transporter, profile, reason)
+        break
       case 'welcome':
         await sendWelcomeEmail(transporter, profile)
         break
@@ -152,6 +155,49 @@ async function sendRejectedEmail(transporter: nodemailer.Transporter, profile: {
       </div>
       <p style="font-size: 14px; color: #666; line-height: 1.6;">
         Si tienes dudas, responde a este correo y con gusto te ayudamos.
+      </p>
+    `),
+  })
+}
+
+async function sendReturnedPendingEmail(transporter: nodemailer.Transporter, profile: { full_name: string; email: string; ranch_name: string; slug: string }, reason?: string) {
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
+    to: profile.email,
+    subject: '🔄 Tu perfil en Regenerando Ando fue devuelto a revisión',
+    html: baseTemplate(`
+      <h1 style="color: #B45309; font-size: 24px; margin-bottom: 16px;">
+        Hola, ${profile.full_name}
+      </h1>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Tu perfil de <strong>${profile.ranch_name || 'tu rancho'}</strong> fue devuelto a estado de revisión.
+        Esto puede deberse a que falta información o necesitamos verificar algunos datos.
+      </p>
+      ${reason ? `
+      <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0;">
+        <p style="font-size: 14px; color: #92400E; margin: 0 0 4px 0; font-weight: 600;">Nota del administrador:</p>
+        <p style="font-size: 15px; color: #78350F; margin: 0; line-height: 1.5;">${reason}</p>
+      </div>
+      ` : ''}
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Te recomendamos comunicarte con nosotros para resolver cualquier duda o completar
+        la información que haga falta. Puedes escribirnos directamente a:
+      </p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="mailto:daniel@regenerandoando.com" style="font-size: 16px; color: #0F6E56; font-weight: 600; text-decoration: none;">
+          daniel@regenerandoando.com
+        </a>
+      </div>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        También puedes revisar y actualizar tu perfil desde tu panel:
+      </p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://regenerandoando.com/mi-perfil/editar" style="background-color: #B45309; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Revisar mi perfil
+        </a>
+      </div>
+      <p style="font-size: 14px; color: #666; line-height: 1.6;">
+        Con gusto te ayudamos a completar tu registro. ¡Estamos para apoyarte!
       </p>
     `),
   })
