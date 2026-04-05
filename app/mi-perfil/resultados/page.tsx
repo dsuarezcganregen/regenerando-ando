@@ -100,8 +100,8 @@ export default function ResultadosPage() {
     const envData = {
       profile_id: userId,
       year_reported: year,
-      carrying_capacity_before: capacityBefore ? parseFloat(capacityBefore) : null,
-      carrying_capacity_after: capacityAfter ? parseFloat(capacityAfter) : null,
+      carrying_capacity_before: capacityBefore ? Math.min(parseFloat(capacityBefore), 10) : null,
+      carrying_capacity_after: capacityAfter ? Math.min(parseFloat(capacityAfter), 10) : null,
       has_soil_analysis: hasSoilAnalysis,
       organic_matter_improved: organicMatter,
       erosion_reduced: erosionReduced,
@@ -174,8 +174,8 @@ export default function ResultadosPage() {
           {/* Environmental */}
           <Section title="Resultados ambientales">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Capacidad de carga ANTES (UA/ha)" type="number" value={capacityBefore} onChange={setCapacityBefore} />
-              <Field label="Capacidad de carga DESPUÉS (UA/ha)" type="number" value={capacityAfter} onChange={setCapacityAfter} />
+              <Field label="Capacidad de carga ANTES (UA/ha, máx 10)" type="number" value={capacityBefore} onChange={(v: string) => setCapacityBefore(v && parseFloat(v) > 10 ? '10' : v)} />
+              <Field label="Capacidad de carga DESPUÉS (UA/ha, máx 10)" type="number" value={capacityAfter} onChange={(v: string) => setCapacityAfter(v && parseFloat(v) > 10 ? '10' : v)} />
               <SelectField label="Cobertura de suelo" value={soilCoverage} onChange={setSoilCoverage}
                 options={[['mejorado', 'Mejorado'], ['sin_cambios', 'Sin cambios'], ['empeorado', 'Empeorado']]} />
               <SelectField label="Diversidad forrajera" value={forageDiversity} onChange={setForageDiversity}
