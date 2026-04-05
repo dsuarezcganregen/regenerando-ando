@@ -95,13 +95,23 @@ export default function ResultadosPage() {
     if (!userId) return
     setSaving(true)
     setMessage({ type: '', text: '' })
+
+    if (capacityBefore && parseFloat(capacityBefore) > 10) {
+      setMessage({ type: 'error', text: 'La capacidad de carga ANTES no puede ser mayor a 10 UA/ha. Revisa el dato.' })
+      setSaving(false); return
+    }
+    if (capacityAfter && parseFloat(capacityAfter) > 10) {
+      setMessage({ type: 'error', text: 'La capacidad de carga DESPUÉS no puede ser mayor a 10 UA/ha. Revisa el dato.' })
+      setSaving(false); return
+    }
+
     const year = new Date().getFullYear()
 
     const envData = {
       profile_id: userId,
       year_reported: year,
-      carrying_capacity_before: capacityBefore ? Math.min(parseFloat(capacityBefore), 10) : null,
-      carrying_capacity_after: capacityAfter ? Math.min(parseFloat(capacityAfter), 10) : null,
+      carrying_capacity_before: capacityBefore ? parseFloat(capacityBefore) : null,
+      carrying_capacity_after: capacityAfter ? parseFloat(capacityAfter) : null,
       has_soil_analysis: hasSoilAnalysis,
       organic_matter_improved: organicMatter,
       erosion_reduced: erosionReduced,
@@ -174,8 +184,8 @@ export default function ResultadosPage() {
           {/* Environmental */}
           <Section title="Resultados ambientales">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Capacidad de carga ANTES (UA/ha, máx 10)" type="number" value={capacityBefore} onChange={(v: string) => setCapacityBefore(v && parseFloat(v) > 10 ? '10' : v)} />
-              <Field label="Capacidad de carga DESPUÉS (UA/ha, máx 10)" type="number" value={capacityAfter} onChange={(v: string) => setCapacityAfter(v && parseFloat(v) > 10 ? '10' : v)} />
+              <Field label="Capacidad de carga ANTES (UA/ha, máx 10)" type="number" value={capacityBefore} onChange={setCapacityBefore} />
+              <Field label="Capacidad de carga DESPUÉS (UA/ha, máx 10)" type="number" value={capacityAfter} onChange={setCapacityAfter} />
               <SelectField label="Cobertura de suelo" value={soilCoverage} onChange={setSoilCoverage}
                 options={[['mejorado', 'Mejorado'], ['sin_cambios', 'Sin cambios'], ['empeorado', 'Empeorado']]} />
               <SelectField label="Diversidad forrajera" value={forageDiversity} onChange={setForageDiversity}

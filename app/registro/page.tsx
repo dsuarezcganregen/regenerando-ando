@@ -284,6 +284,10 @@ export default function RegistroWizardPage() {
         if (selectedSpecies.length === 0) return fail('Selecciona al menos una especie')
         if (businessTypes.length === 0) return fail('Selecciona al menos un tipo de ganadería')
         return true
+      case 4:
+        if (capacityBefore && parseFloat(capacityBefore) > 10) return fail('La capacidad de carga ANTES no puede ser mayor a 10 UA/ha. Revisa el dato.')
+        if (capacityAfter && parseFloat(capacityAfter) > 10) return fail('La capacidad de carga DESPUÉS no puede ser mayor a 10 UA/ha. Revisa el dato.')
+        return true
       case 5:
         if (!practicesDesc.trim()) return fail('Describe tus prácticas regenerativas')
         if (!biggestChallenge.trim()) return fail('Describe tu mayor desafío')
@@ -407,8 +411,8 @@ export default function RegistroWizardPage() {
     if (capacityBefore || capacityAfter || soilCoverage || wildlifeIncrease) {
       await supabase.from('results_environmental').upsert({
         profile_id: userId, year_reported: year,
-        carrying_capacity_before: capacityBefore ? Math.min(parseFloat(capacityBefore), 10) : null,
-        carrying_capacity_after: capacityAfter ? Math.min(parseFloat(capacityAfter), 10) : null,
+        carrying_capacity_before: capacityBefore ? parseFloat(capacityBefore) : null,
+        carrying_capacity_after: capacityAfter ? parseFloat(capacityAfter) : null,
         has_soil_analysis: hasSoilAnalysis === 'si', organic_matter_improved: organicMatterImproved === 'si',
         erosion_reduced: erosionReduced === 'si', soil_coverage: soilCoverage || null,
         forage_diversity: forageDiversity || null, wildlife_increase: wildlifeIncrease,
@@ -667,8 +671,8 @@ export default function RegistroWizardPage() {
 
             <Section title="Suelo y biodiversidad">
               <Grid>
-                <Input label="Capacidad de carga ANTES (UA/ha)" type="number" value={capacityBefore} onChange={(v) => setCapacityBefore(v && parseFloat(v) > 10 ? '10' : v)} placeholder="Ej: 0.5" />
-                <Input label="Capacidad de carga DESPUÉS (UA/ha)" type="number" value={capacityAfter} onChange={(v) => setCapacityAfter(v && parseFloat(v) > 10 ? '10' : v)} placeholder="Ej: 2.5" />
+                <Input label="Capacidad de carga ANTES (UA/ha)" type="number" value={capacityBefore} onChange={setCapacityBefore} placeholder="Ej: 0.5 (máx 10)" />
+                <Input label="Capacidad de carga DESPUÉS (UA/ha)" type="number" value={capacityAfter} onChange={setCapacityAfter} placeholder="Ej: 2.5 (máx 10)" />
                 <Sel label="¿Tienes análisis de suelos?" value={hasSoilAnalysis} onChange={setHasSoilAnalysis} options={[['si','Sí'],['no','No']]} />
                 {hasSoilAnalysis === 'si' && <Sel label="¿Ha mejorado la materia orgánica?" value={organicMatterImproved} onChange={setOrganicMatterImproved} options={[['si','Sí'],['no','No'],['no_se','No sé']]} />}
                 <Sel label="Cobertura de suelo" value={soilCoverage} onChange={setSoilCoverage} options={[['mejorado','Mejorado'],['sin_cambios','Sin cambios'],['empeorado','Empeorado']]} />
