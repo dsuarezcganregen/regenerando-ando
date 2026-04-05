@@ -74,6 +74,28 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
         {profile.is_featured && <span className="ml-2">⭐ Destacado</span>}
       </div>
 
+      {/* Contact buttons */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {profile.email && (
+          <a
+            href={`mailto:${profile.email}?subject=Regenerando Ando — ${profile.ranch_name || profile.full_name}`}
+            className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm hover:bg-blue-100 transition-colors"
+          >
+            <span>✉️</span> Email: {profile.email}
+          </a>
+        )}
+        {profile.phone && (
+          <a
+            href={`https://wa.me/${(profile.phone_country_code || '+52').replace('+', '')}${profile.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${profile.full_name}, te escribo desde Regenerando Ando.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg text-sm hover:bg-green-100 transition-colors"
+          >
+            <span>💬</span> WhatsApp: {profile.phone_country_code || '+52'} {profile.phone}
+          </a>
+        )}
+      </div>
+
       {/* Datos personales */}
       <Section title="Datos personales">
         <Grid>
