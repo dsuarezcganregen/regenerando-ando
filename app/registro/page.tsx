@@ -266,13 +266,23 @@ export default function RegistroWizardPage() {
       case 1:
         if (!fullName.trim()) return fail('Nombre completo es requerido')
         if (!ranchName.trim()) return fail('Nombre del rancho es requerido')
+        if (!email.trim()) return fail('Email es requerido')
+        if (!description.trim()) return fail('Escribe una descripción de tu rancho')
         return true
       case 2:
         if (!country) return fail('Selecciona un país')
         if (!stateProvince.trim()) return fail('Estado/provincia es requerido')
+        if (!municipality.trim()) return fail('Municipio es requerido')
+        if (!ecosystem) return fail('Selecciona un ecosistema')
+        if (!latitude || !longitude) return fail('Marca la ubicación de tu rancho en el mapa')
         return true
       case 3:
+        if (!totalHectares.trim()) return fail('Hectáreas totales es requerido')
+        if (!yearStartedRegen.trim()) return fail('Año de inicio en regenerativo es requerido')
+        if (!headCount.trim()) return fail('Número de cabezas es requerido')
         if (strategies.length === 0) return fail('Selecciona al menos una estrategia de manejo')
+        if (selectedSpecies.length === 0) return fail('Selecciona al menos una especie')
+        if (businessTypes.length === 0) return fail('Selecciona al menos un tipo de ganadería')
         return true
       case 5:
         if (!practicesDesc.trim()) return fail('Describe tus prácticas regenerativas')
@@ -537,7 +547,7 @@ export default function RegistroWizardPage() {
               <Input label="YouTube" value={youtube} onChange={setYoutube} placeholder="URL del canal" />
               <Input label="TikTok" value={tiktok} onChange={setTiktok} placeholder="sin @" />
             </Grid>
-            <Textarea label="Descripción de tu rancho (max 500)" value={description} onChange={setDescription} maxLength={500}
+            <Textarea label="Descripción de tu rancho * (max 500)" value={description} onChange={setDescription} maxLength={500}
               placeholder="Cuéntanos sobre tu rancho, tu historia, tu motivación..." />
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -564,9 +574,9 @@ export default function RegistroWizardPage() {
                 </select>
               </div>
               <Input label="Estado / Provincia *" value={stateProvince} onChange={setStateProvince} />
-              <Input label="Municipio" value={municipality} onChange={setMunicipality} />
+              <Input label="Municipio *" value={municipality} onChange={setMunicipality} />
               <Input label="Localidad / Poblado" value={locality} onChange={setLocality} />
-              <Sel label="Ecosistema" value={ecosystem} onChange={setEcosystem} options={[
+              <Sel label="Ecosistema *" value={ecosystem} onChange={setEcosystem} options={[
                 ['bosque_tropical_humedo','Bosque tropical húmedo'],['bosque_tropical_seco','Bosque tropical seco'],
                 ['bosque_templado','Bosque templado'],['pastizal','Pastizal'],['sabana','Sabana'],
                 ['matorral_xerofilo','Matorral xerófilo'],['semidesierto','Semidesierto'],
@@ -577,7 +587,7 @@ export default function RegistroWizardPage() {
               <Input label="Distribución de lluvias" value={rainDistribution} onChange={setRainDistribution} placeholder="Ej: mayo a octubre, bimodal" />
             </Grid>
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ubicación de tu finca en el mapa</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ubicación de tu finca en el mapa *</label>
               <LocationPicker latitude={latitude} longitude={longitude} onLocationChange={(lat, lng) => { setLatitude(lat); setLongitude(lng) }} />
             </div>
           </Section>
@@ -587,13 +597,13 @@ export default function RegistroWizardPage() {
         {step === 3 && (
           <Section>
             <Grid>
-              <Input label="Hectáreas totales" type="number" value={totalHectares} onChange={setTotalHectares} />
+              <Input label="Hectáreas totales *" type="number" value={totalHectares} onChange={setTotalHectares} />
               <Input label="Hectáreas regenerativas" type="number" value={regenHectares} onChange={setRegenHectares} />
               <Input label="Año de inicio en ganadería" type="number" value={yearStartedRanching} onChange={setYearStartedRanching} placeholder="Ej: 1995" />
-              <Input label="Año de inicio con ganadería regenerativa" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
+              <Input label="Año de inicio con ganadería regenerativa *" type="number" value={yearStartedRegen} onChange={setYearStartedRegen} placeholder="Ej: 2018" />
               <Sel label="Generación en ganadería" value={generationRanching} onChange={setGenerationRanching}
                 options={[['primera','Primera generación'],['segunda','Segunda generación'],['tercera','Tercera generación'],['cuarta_o_mas','Cuarta generación o más']]} />
-              <Input label="Número de cabezas aproximado" type="number" value={headCount} onChange={setHeadCount} />
+              <Input label="Número de cabezas aproximado *" type="number" value={headCount} onChange={setHeadCount} />
             </Grid>
 
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
@@ -602,8 +612,8 @@ export default function RegistroWizardPage() {
             <MultiCheck label="Prácticas implementadas" options={practicesImplementedOptions} selected={practicesImplemented} onToggle={(v) => toggle(practicesImplemented, v, setPracticesImplemented)} />
             <MultiCheck label="Prácticas eliminadas" options={practicesEliminatedOptions} selected={practicesEliminated} onToggle={(v) => toggle(practicesEliminated, v, setPracticesEliminated)} />
 
-            <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
-            <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
+            <MultiCheck label="Tipo(s) de ganadería *" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
+            <MultiCheck label="Especies *" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Razas principales</label>
