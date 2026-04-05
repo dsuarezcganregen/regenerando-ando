@@ -217,6 +217,144 @@ export default function RegistroWizardPage() {
   const [invMessage, setInvMessage] = useState('Hola, te invito a registrar tu rancho en Regenerando Ando, el directorio mundial de ganaderos regenerativos. Es gratuito y es una forma de hacer visible nuestro trabajo. Regístrate en regenerandoando.com')
   const [invSent, setInvSent] = useState<string[]>([])
 
+  // === AUTO-SAVE / RESTORE from localStorage ===
+  const STORAGE_KEY = 'ra_registro_draft'
+
+  const getFormData = () => ({
+    step, fullName, ranchName, description, phone, phoneCode, website,
+    instagram, facebook, youtube, tiktok, hasAdvisor, advisorName,
+    hasAssociation, associationName,
+    country, stateProvince, municipality, locality, latitude, longitude,
+    ecosystem, altitudeMasl, precipitationMm, rainDistribution,
+    totalHectares, regenHectares, yearStartedRanching, yearStartedRegen,
+    generationRanching, headCount, breedsBySpeciesState, breedOtherBySpecies,
+    previousModel, strategies, strategyOther, businessTypes, selectedSpecies,
+    selectedProducts, productOther, productFrequency,
+    practicesImplemented, practicesEliminated,
+    avgOccupationDays, grazingDensity, paddockChangesMax, paddockChangesRegular,
+    hasWaterSystem, waterSources, usesIrrigation,
+    capacityBefore, capacityAfter, hasSoilAnalysis, organicMatterImproved,
+    soilCoverage, erosionReduced, forageDiversity, wildlifeIncrease,
+    wildlifeSpecies, biodiversityOverall, agrochemReduction,
+    otherInputsReduced, otherInputsPct, waterHarvest,
+    directPlantDiversity, plantDiversityDesc,
+    productionChange, productionChangePct, reproductionImproved,
+    parasiteSituation, profitability, profitabilityReason,
+    financialImproved, workDynamics, workLoad, workforceChange, workforceReason,
+    doesAgriculture, crops, cropUse, geneticImpact,
+    wouldEliminate, whyWouldOrNot, wouldRecommend, narrative, additionalComments,
+    practicesDesc, biggestChallenge, mistakeLearned, soilChangeObserved, whatWouldShow,
+    ref1Name, ref1Contact, ref1Relationship, ref2Name, ref2Contact, ref2Relationship,
+    noReferences, howLearned,
+    offersCourses, coursesDesc, consentPublish, consentPrivacy,
+  })
+
+  const restoreFormData = (saved: any) => {
+    if (saved.step) setStep(saved.step)
+    if (saved.fullName) setFullName(saved.fullName)
+    if (saved.ranchName) setRanchName(saved.ranchName)
+    if (saved.description) setDescription(saved.description)
+    if (saved.phone) setPhone(saved.phone)
+    if (saved.phoneCode) setPhoneCode(saved.phoneCode)
+    if (saved.website) setWebsite(saved.website)
+    if (saved.instagram) setInstagram(saved.instagram)
+    if (saved.facebook) setFacebook(saved.facebook)
+    if (saved.youtube) setYoutube(saved.youtube)
+    if (saved.tiktok) setTiktok(saved.tiktok)
+    if (saved.hasAdvisor) setHasAdvisor(saved.hasAdvisor)
+    if (saved.advisorName) setAdvisorName(saved.advisorName)
+    if (saved.hasAssociation) setHasAssociation(saved.hasAssociation)
+    if (saved.associationName) setAssociationName(saved.associationName)
+    if (saved.country) setCountry(saved.country)
+    if (saved.stateProvince) setStateProvince(saved.stateProvince)
+    if (saved.municipality) setMunicipality(saved.municipality)
+    if (saved.locality) setLocality(saved.locality)
+    if (saved.latitude) setLatitude(saved.latitude)
+    if (saved.longitude) setLongitude(saved.longitude)
+    if (saved.ecosystem) setEcosystem(saved.ecosystem)
+    if (saved.altitudeMasl) setAltitudeMasl(saved.altitudeMasl)
+    if (saved.precipitationMm) setPrecipitationMm(saved.precipitationMm)
+    if (saved.rainDistribution) setRainDistribution(saved.rainDistribution)
+    if (saved.totalHectares) setTotalHectares(saved.totalHectares)
+    if (saved.regenHectares) setRegenHectares(saved.regenHectares)
+    if (saved.yearStartedRanching) setYearStartedRanching(saved.yearStartedRanching)
+    if (saved.yearStartedRegen) setYearStartedRegen(saved.yearStartedRegen)
+    if (saved.generationRanching) setGenerationRanching(saved.generationRanching)
+    if (saved.headCount) setHeadCount(saved.headCount)
+    if (saved.breedsBySpeciesState) setBreedsBySpeciesState(saved.breedsBySpeciesState)
+    if (saved.breedOtherBySpecies) setBreedOtherBySpecies(saved.breedOtherBySpecies)
+    if (saved.previousModel) setPreviousModel(saved.previousModel)
+    if (saved.strategies?.length) setStrategies(saved.strategies)
+    if (saved.strategyOther) setStrategyOther(saved.strategyOther)
+    if (saved.businessTypes?.length) setBusinessTypes(saved.businessTypes)
+    if (saved.selectedSpecies?.length) setSelectedSpecies(saved.selectedSpecies)
+    if (saved.selectedProducts?.length) setSelectedProducts(saved.selectedProducts)
+    if (saved.productOther) setProductOther(saved.productOther)
+    if (saved.productFrequency) setProductFrequency(saved.productFrequency)
+    if (saved.practicesImplemented?.length) setPracticesImplemented(saved.practicesImplemented)
+    if (saved.practicesEliminated?.length) setPracticesEliminated(saved.practicesEliminated)
+    if (saved.avgOccupationDays) setAvgOccupationDays(saved.avgOccupationDays)
+    if (saved.grazingDensity) setGrazingDensity(saved.grazingDensity)
+    if (saved.paddockChangesMax) setPaddockChangesMax(saved.paddockChangesMax)
+    if (saved.paddockChangesRegular) setPaddockChangesRegular(saved.paddockChangesRegular)
+    if (saved.hasWaterSystem) setHasWaterSystem(saved.hasWaterSystem)
+    if (saved.waterSources?.length) setWaterSources(saved.waterSources)
+    if (saved.usesIrrigation) setUsesIrrigation(saved.usesIrrigation)
+    if (saved.capacityBefore) setCapacityBefore(saved.capacityBefore)
+    if (saved.capacityAfter) setCapacityAfter(saved.capacityAfter)
+    if (saved.hasSoilAnalysis) setHasSoilAnalysis(saved.hasSoilAnalysis)
+    if (saved.organicMatterImproved) setOrganicMatterImproved(saved.organicMatterImproved)
+    if (saved.soilCoverage) setSoilCoverage(saved.soilCoverage)
+    if (saved.erosionReduced) setErosionReduced(saved.erosionReduced)
+    if (saved.forageDiversity) setForageDiversity(saved.forageDiversity)
+    if (saved.wildlifeIncrease) setWildlifeIncrease(saved.wildlifeIncrease)
+    if (saved.wildlifeSpecies) setWildlifeSpecies(saved.wildlifeSpecies)
+    if (saved.biodiversityOverall) setBiodiversityOverall(saved.biodiversityOverall)
+    if (saved.agrochemReduction) setAgrochemReduction(saved.agrochemReduction)
+    if (saved.otherInputsReduced) setOtherInputsReduced(saved.otherInputsReduced)
+    if (saved.otherInputsPct) setOtherInputsPct(saved.otherInputsPct)
+    if (saved.waterHarvest?.length) setWaterHarvest(saved.waterHarvest)
+    if (saved.directPlantDiversity) setDirectPlantDiversity(saved.directPlantDiversity)
+    if (saved.plantDiversityDesc) setPlantDiversityDesc(saved.plantDiversityDesc)
+    if (saved.productionChange) setProductionChange(saved.productionChange)
+    if (saved.productionChangePct) setProductionChangePct(saved.productionChangePct)
+    if (saved.reproductionImproved) setReproductionImproved(saved.reproductionImproved)
+    if (saved.parasiteSituation) setParasiteSituation(saved.parasiteSituation)
+    if (saved.profitability) setProfitability(saved.profitability)
+    if (saved.profitabilityReason) setProfitabilityReason(saved.profitabilityReason)
+    if (saved.financialImproved) setFinancialImproved(saved.financialImproved)
+    if (saved.workDynamics) setWorkDynamics(saved.workDynamics)
+    if (saved.workLoad) setWorkLoad(saved.workLoad)
+    if (saved.workforceChange) setWorkforceChange(saved.workforceChange)
+    if (saved.workforceReason) setWorkforceReason(saved.workforceReason)
+    if (saved.doesAgriculture) setDoesAgriculture(saved.doesAgriculture)
+    if (saved.crops) setCrops(saved.crops)
+    if (saved.cropUse) setCropUse(saved.cropUse)
+    if (saved.geneticImpact) setGeneticImpact(saved.geneticImpact)
+    if (saved.wouldEliminate) setWouldEliminate(saved.wouldEliminate)
+    if (saved.whyWouldOrNot) setWhyWouldOrNot(saved.whyWouldOrNot)
+    if (saved.wouldRecommend) setWouldRecommend(saved.wouldRecommend)
+    if (saved.narrative) setNarrative(saved.narrative)
+    if (saved.additionalComments) setAdditionalComments(saved.additionalComments)
+    if (saved.practicesDesc) setPracticesDesc(saved.practicesDesc)
+    if (saved.biggestChallenge) setBiggestChallenge(saved.biggestChallenge)
+    if (saved.mistakeLearned) setMistakeLearned(saved.mistakeLearned)
+    if (saved.soilChangeObserved) setSoilChangeObserved(saved.soilChangeObserved)
+    if (saved.whatWouldShow) setWhatWouldShow(saved.whatWouldShow)
+    if (saved.ref1Name) setRef1Name(saved.ref1Name)
+    if (saved.ref1Contact) setRef1Contact(saved.ref1Contact)
+    if (saved.ref1Relationship) setRef1Relationship(saved.ref1Relationship)
+    if (saved.ref2Name) setRef2Name(saved.ref2Name)
+    if (saved.ref2Contact) setRef2Contact(saved.ref2Contact)
+    if (saved.ref2Relationship) setRef2Relationship(saved.ref2Relationship)
+    if (saved.noReferences) setNoReferences(saved.noReferences)
+    if (saved.howLearned) setHowLearned(saved.howLearned)
+    if (saved.offersCourses) setOffersCourses(saved.offersCourses)
+    if (saved.coursesDesc) setCoursesDesc(saved.coursesDesc)
+    if (saved.consentPublish) setConsentPublish(saved.consentPublish)
+    if (saved.consentPrivacy) setConsentPrivacy(saved.consentPrivacy)
+  }
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -245,10 +383,30 @@ export default function RegistroWizardPage() {
         setEmail(profile.email || '')
       }
 
+      // Restore saved draft from localStorage
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          restoreFormData(parsed)
+        }
+      } catch {}
+
       setLoading(false)
     }
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save to localStorage on every field change (debounced)
+  useEffect(() => {
+    if (loading || submitted) return
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormData()))
+      } catch {}
+    }, 500)
+    return () => clearTimeout(timeout)
+  }) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = (arr: string[], val: string, setter: (v: string[]) => void) => {
     setter(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val])
@@ -514,6 +672,7 @@ export default function RegistroWizardPage() {
 
     setSaving(false)
     setSubmitted(true)
+    try { localStorage.removeItem(STORAGE_KEY) } catch {}
     setStep(8)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
