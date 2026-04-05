@@ -17,16 +17,22 @@ const strategyOptions = [
   { value: 'pastoreo_racional', label: 'Pastoreo Racional' },
   { value: 'otro', label: 'Otro' },
 ]
-const breedOptions = [
-  'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
-  'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
-  'Holstein','Jersey','Normando','Montbéliarde',
-  'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
-  'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
-  'Senepol','Bonsmara','Tuli',
-  'Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire',
-  'Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana',
-]
+const breedsBySpecies: Record<string, string[]> = {
+  bovino: [
+    'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
+    'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
+    'Holstein','Jersey','Normando','Montbéliarde',
+    'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
+    'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
+    'Senepol','Bonsmara','Tuli',
+  ],
+  bufalino: ['Murrah','Mediterráneo','Jafarabadi','Carabao','Búfalo de río'],
+  ovino: ['Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire','Santa Inés','Texel','Merino','Criollo'],
+  caprino: ['Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana','LaMancha','Anglo-Nubian','Criollo'],
+  equino: ['Cuarto de Milla','Criollo','Paso Fino','Pura Sangre','Appaloosa','Árabe','Percherón'],
+  porcino: ['Duroc','Hampshire','Yorkshire','Landrace','Pietrain','Berkshire','Criollo','Pelón Mexicano'],
+}
+const allBreedOptions = [...new Set(Object.values(breedsBySpecies).flat())]
 const businessOptions = [
   { value: 'cria', label: 'Cría' },{ value: 'desarrollo', label: 'Desarrollo' },
   { value: 'engorda', label: 'Engorda' },{ value: 'doble_proposito', label: 'Doble propósito' },
@@ -118,8 +124,9 @@ export default function RegistroWizardPage() {
   const [yearStartedRegen, setYearStartedRegen] = useState('')
   const [generationRanching, setGenerationRanching] = useState('')
   const [headCount, setHeadCount] = useState('')
-  const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
-  const [breedOther, setBreedOther] = useState('')
+  const [breedsBySpeciesState, setBreedsBySpeciesState] = useState<Record<string, string[]>>({})
+  const [breedOtherBySpecies, setBreedOtherBySpecies] = useState<Record<string, string>>({})
+
   const [previousModel, setPreviousModel] = useState('')
   const [strategies, setStrategies] = useState<string[]>([])
   const [strategyOther, setStrategyOther] = useState('')
@@ -361,11 +368,15 @@ export default function RegistroWizardPage() {
     if (eOp) await supabase.from('operations').update(opData).eq('profile_id', userId)
     else await supabase.from('operations').insert(opData)
 
-    // Species
+    // Species (breeds per species)
     await supabase.from('ranch_species').delete().eq('profile_id', userId)
     if (selectedSpecies.length > 0) {
-      const breedsStr = [...selectedBreeds, ...(breedOther ? [breedOther] : [])].join(', ')
-      await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breedsStr || null })))
+      await supabase.from('ranch_species').insert(selectedSpecies.map(s => {
+        const speciesBreeds = breedsBySpeciesState[s] || []
+        const otherBreed = breedOtherBySpecies[s] || ''
+        const breedsStr = [...speciesBreeds, ...(otherBreed ? [otherBreed] : [])].join(', ')
+        return { profile_id: userId, species: s, breeds: breedsStr || null }
+      }))
     }
 
     // Management practices
@@ -609,6 +620,9 @@ export default function RegistroWizardPage() {
                 options={[['primera','Primera generación'],['segunda','Segunda generación'],['tercera','Tercera generación'],['cuarta_o_mas','Cuarta generación o más']]} />
               <Input label="Número de cabezas aproximado *" type="number" value={headCount} onChange={setHeadCount} />
             </Grid>
+            <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2">
+              🔒 Los datos de hectáreas y número de cabezas no se publican en tu perfil. Solo se usan para estadísticas agregadas del dashboard.
+            </p>
 
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
             {strategies.includes('otro') && <Input label="Especifica la estrategia" value={strategyOther} onChange={setStrategyOther} />}
@@ -619,18 +633,32 @@ export default function RegistroWizardPage() {
             <MultiCheck label="Tipo(s) de ganadería *" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
             <MultiCheck label="Especies *" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
 
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Razas principales</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                {breedOptions.map(b => (
-                  <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedBreeds.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
-                    <input type="checkbox" checked={selectedBreeds.includes(b)} onChange={() => toggle(selectedBreeds, b, setSelectedBreeds)} className="rounded border-gray-300 text-primary focus:ring-primary" />
-                    {b}
-                  </label>
-                ))}
-              </div>
-              <Input label="Otra(s) raza(s)" value={breedOther} onChange={setBreedOther} placeholder="Razas no listadas arriba" />
-            </div>
+            {/* Razas por especie */}
+            {selectedSpecies.filter(sp => breedsBySpecies[sp]).map(sp => {
+              const speciesLabel = speciesOptions.find(o => o.value === sp)?.label || sp
+              const breeds = breedsBySpecies[sp] || []
+              const selected = breedsBySpeciesState[sp] || []
+              const toggleBreed = (breed: string) => {
+                setBreedsBySpeciesState(prev => {
+                  const current = prev[sp] || []
+                  return { ...prev, [sp]: current.includes(breed) ? current.filter(b => b !== breed) : [...current, breed] }
+                })
+              }
+              return (
+                <div key={sp} className="mt-4 border border-gray-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Razas de {speciesLabel}</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {breeds.map(b => (
+                      <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selected.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
+                        <input type="checkbox" checked={selected.includes(b)} onChange={() => toggleBreed(b)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                        {b}
+                      </label>
+                    ))}
+                  </div>
+                  <Input label="Otra(s) raza(s)" value={breedOtherBySpecies[sp] || ''} onChange={(v) => setBreedOtherBySpecies(prev => ({ ...prev, [sp]: v }))} placeholder="Razas no listadas arriba" />
+                </div>
+              )
+            })}
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Productos que vendes</label>
@@ -673,6 +701,11 @@ export default function RegistroWizardPage() {
               <Grid>
                 <Input label="Capacidad de carga ANTES (UA/ha)" type="number" value={capacityBefore} onChange={setCapacityBefore} placeholder="Ej: 0.5 (máx 10)" />
                 <Input label="Capacidad de carga DESPUÉS (UA/ha)" type="number" value={capacityAfter} onChange={setCapacityAfter} placeholder="Ej: 2.5 (máx 10)" />
+              </Grid>
+              <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2">
+                💡 Si mides en ha/UA (hectáreas por unidad animal), divide 1 entre tu valor para convertir a UA/ha. Ejemplo: 10 ha/UA = 1÷10 = 0.1 UA/ha · 5 ha/UA = 1÷5 = 0.2 UA/ha · 2 ha/UA = 1÷2 = 0.5 UA/ha
+              </p>
+              <Grid>
                 <Sel label="¿Tienes análisis de suelos?" value={hasSoilAnalysis} onChange={setHasSoilAnalysis} options={[['si','Sí'],['no','No']]} />
                 {hasSoilAnalysis === 'si' && <Sel label="¿Ha mejorado la materia orgánica?" value={organicMatterImproved} onChange={setOrganicMatterImproved} options={[['si','Sí'],['no','No'],['no_se','No sé']]} />}
                 <Sel label="Cobertura de suelo" value={soilCoverage} onChange={setSoilCoverage} options={[['mejorado','Mejorado'],['sin_cambios','Sin cambios'],['empeorado','Empeorado']]} />

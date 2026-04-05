@@ -186,6 +186,11 @@ export default function ResultadosPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Capacidad de carga ANTES (UA/ha, máx 10)" type="number" value={capacityBefore} onChange={setCapacityBefore} />
               <Field label="Capacidad de carga DESPUÉS (UA/ha, máx 10)" type="number" value={capacityAfter} onChange={setCapacityAfter} />
+            </div>
+            <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2">
+              💡 Si mides en ha/UA (hectáreas por unidad animal), divide 1 entre tu valor para convertir a UA/ha. Ejemplo: 10 ha/UA = 1÷10 = 0.1 UA/ha · 5 ha/UA = 1÷5 = 0.2 UA/ha · 2 ha/UA = 1÷2 = 0.5 UA/ha
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <SelectField label="Cobertura de suelo" value={soilCoverage} onChange={setSoilCoverage}
                 options={[['mejorado', 'Mejorado'], ['sin_cambios', 'Sin cambios'], ['empeorado', 'Empeorado']]} />
               <SelectField label="Diversidad forrajera" value={forageDiversity} onChange={setForageDiversity}

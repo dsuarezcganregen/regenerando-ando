@@ -46,16 +46,22 @@ const speciesOptions = [
   { value: 'gallinas', label: 'Gallinas' },{ value: 'pollos', label: 'Pollos de engorda' },
   { value: 'abejas', label: 'Abejas' },{ value: 'otro', label: 'Otro' },
 ]
-const breedOptions = [
-  'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
-  'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
-  'Holstein','Jersey','Normando','Montbéliarde',
-  'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
-  'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
-  'Senepol','Bonsmara','Tuli',
-  'Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire',
-  'Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana',
-]
+const breedsBySpecies: Record<string, string[]> = {
+  bovino: [
+    'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
+    'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
+    'Holstein','Jersey','Normando','Montbéliarde',
+    'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
+    'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
+    'Senepol','Bonsmara','Tuli',
+  ],
+  bufalino: ['Murrah','Mediterráneo','Jafarabadi','Carabao','Búfalo de río'],
+  ovino: ['Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire','Santa Inés','Texel','Merino','Criollo'],
+  caprino: ['Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana','LaMancha','Anglo-Nubian','Criollo'],
+  equino: ['Cuarto de Milla','Criollo','Paso Fino','Pura Sangre','Appaloosa','Árabe','Percherón'],
+  porcino: ['Duroc','Hampshire','Yorkshire','Landrace','Pietrain','Berkshire','Criollo','Pelón Mexicano'],
+}
+const allBreedOptions = [...new Set(Object.values(breedsBySpecies).flat())]
 const productOptions = [
   'Becerros al destete','Novillos/engorda','Carne empacada','Leche','Queso','Yogurt',
   'Huevo','Miel','Lana','Composta','Pie de cría','Semen/embriones','Otro',
@@ -111,8 +117,9 @@ export default function EditarPerfilPage() {
   const [yearStartedRegen, setYearStartedRegen] = useState('')
   const [generationRanching, setGenerationRanching] = useState('')
   const [headCount, setHeadCount] = useState('')
-  const [selectedBreeds, setSelectedBreeds] = useState<string[]>([])
-  const [breedOther, setBreedOther] = useState('')
+  const [breedsBySpeciesState, setBreedsBySpeciesState] = useState<Record<string, string[]>>({})
+  const [breedOtherBySpecies, setBreedOtherBySpecies] = useState<Record<string, string>>({})
+
   const [strategies, setStrategies] = useState<string[]>([])
   const [strategyOther, setStrategyOther] = useState('')
   const [businessTypes, setBusinessTypes] = useState<string[]>([])
@@ -186,17 +193,23 @@ export default function EditarPerfilPage() {
         }
       }
 
-      // Species
+      // Species (breeds per species)
       const { data: speciesData } = await supabase.from('ranch_species').select('species, breeds').eq('profile_id', user.id)
       if (speciesData) {
         setSelectedSpecies(speciesData.map(s => s.species))
-        const b = speciesData[0]?.breeds
-        if (b) {
-          const known = breedOptions.filter(bo => b.includes(bo))
-          setSelectedBreeds(known)
-          const others = b.split(',').map((s: string) => s.trim()).filter((s: string) => !breedOptions.includes(s) && s)
-          setBreedOther(others.join(', '))
-        }
+        const breedsMap: Record<string, string[]> = {}
+        const otherMap: Record<string, string> = {}
+        speciesData.forEach(s => {
+          if (s.breeds) {
+            const parts = s.breeds.split(',').map((b: string) => b.trim()).filter(Boolean)
+            const speciesBreedList = breedsBySpecies[s.species] || []
+            breedsMap[s.species] = parts.filter((b: string) => speciesBreedList.includes(b))
+            const others = parts.filter((b: string) => !speciesBreedList.includes(b) && !allBreedOptions.includes(b))
+            if (others.length > 0) otherMap[s.species] = others.join(', ')
+          }
+        })
+        setBreedsBySpeciesState(breedsMap)
+        setBreedOtherBySpecies(otherMap)
       }
 
       // Products
@@ -315,11 +328,15 @@ export default function EditarPerfilPage() {
     if (eOp) await supabase.from('operations').update(opData).eq('profile_id', userId)
     else await supabase.from('operations').insert(opData)
 
-    // Species
+    // Species (breeds per species)
     await supabase.from('ranch_species').delete().eq('profile_id', userId)
     if (selectedSpecies.length > 0) {
-      const breedsStr = [...selectedBreeds, ...(breedOther ? [breedOther] : [])].join(', ')
-      await supabase.from('ranch_species').insert(selectedSpecies.map(s => ({ profile_id: userId, species: s, breeds: breedsStr || null })))
+      await supabase.from('ranch_species').insert(selectedSpecies.map(s => {
+        const speciesBreeds = breedsBySpeciesState[s] || []
+        const otherBreed = breedOtherBySpecies[s] || ''
+        const breedsStr = [...speciesBreeds, ...(otherBreed ? [otherBreed] : [])].join(', ')
+        return { profile_id: userId, species: s, breeds: breedsStr || null }
+      }))
     }
 
     // Management practices (prácticas implementadas y eliminadas)
@@ -468,24 +485,42 @@ export default function EditarPerfilPage() {
                 options={[['primera','Primera'],['segunda','Segunda'],['tercera','Tercera'],['cuarta_o_mas','Cuarta+']]} />
               <Input label="Cabezas aproximadas" type="number" value={headCount} onChange={setHeadCount} />
             </Grid>
+            <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2">
+              🔒 Los datos de hectáreas y número de cabezas no se publican en tu perfil. Solo se usan para estadísticas agregadas del dashboard.
+            </p>
             <MultiCheck label="Estrategia(s) de manejo *" options={strategyOptions} selected={strategies} onToggle={(v) => toggle(strategies, v, setStrategies)} />
             {strategies.includes('otro') && <Input label="Especifica" value={strategyOther} onChange={setStrategyOther} />}
             <MultiCheck label="Prácticas implementadas" options={practicesImplementedOptions} selected={practicesImplemented} onToggle={(v) => toggle(practicesImplemented, v, setPracticesImplemented)} />
             <MultiCheck label="Prácticas eliminadas" options={practicesEliminatedOptions} selected={practicesEliminated} onToggle={(v) => toggle(practicesEliminated, v, setPracticesEliminated)} />
             <MultiCheck label="Tipo(s) de ganadería" options={businessOptions} selected={businessTypes} onToggle={(v) => toggle(businessTypes, v, setBusinessTypes)} />
             <MultiCheck label="Especies" options={speciesOptions} selected={selectedSpecies} onToggle={(v) => toggle(selectedSpecies, v, setSelectedSpecies)} />
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Razas principales</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                {breedOptions.map(b => (
-                  <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedBreeds.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
-                    <input type="checkbox" checked={selectedBreeds.includes(b)} onChange={() => toggle(selectedBreeds, b, setSelectedBreeds)} className="rounded border-gray-300 text-primary focus:ring-primary" />
-                    {b}
-                  </label>
-                ))}
-              </div>
-              <Input label="Otra(s)" value={breedOther} onChange={setBreedOther} placeholder="Razas no listadas" />
-            </div>
+
+            {/* Razas por especie */}
+            {selectedSpecies.filter(sp => breedsBySpecies[sp]).map(sp => {
+              const speciesLabel = speciesOptions.find(o => o.value === sp)?.label || sp
+              const breeds = breedsBySpecies[sp] || []
+              const selected = breedsBySpeciesState[sp] || []
+              const toggleBreed = (breed: string) => {
+                setBreedsBySpeciesState(prev => {
+                  const current = prev[sp] || []
+                  return { ...prev, [sp]: current.includes(breed) ? current.filter(b => b !== breed) : [...current, breed] }
+                })
+              }
+              return (
+                <div key={sp} className="mt-4 border border-gray-200 rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Razas de {speciesLabel}</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {breeds.map(b => (
+                      <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selected.includes(b) ? 'border-primary bg-hero-bg text-primary' : 'border-gray-200'}`}>
+                        <input type="checkbox" checked={selected.includes(b)} onChange={() => toggleBreed(b)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                        {b}
+                      </label>
+                    ))}
+                  </div>
+                  <Input label="Otra(s) raza(s)" value={breedOtherBySpecies[sp] || ''} onChange={(v) => setBreedOtherBySpecies(prev => ({ ...prev, [sp]: v }))} placeholder="Razas no listadas" />
+                </div>
+              )
+            })}
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Productos</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

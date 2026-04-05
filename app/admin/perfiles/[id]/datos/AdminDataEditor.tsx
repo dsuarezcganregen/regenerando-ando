@@ -11,6 +11,7 @@ interface Props {
   initialManagement: any | null
   initialEnvResults: any[]
   initialEconResults: any[]
+  initialSpecies: any[]
 }
 
 export default function AdminDataEditor({
@@ -20,11 +21,17 @@ export default function AdminDataEditor({
   initialManagement,
   initialEnvResults,
   initialEconResults,
+  initialSpecies,
 }: Props) {
   const supabase = createClient()
 
   return (
     <div className="space-y-6">
+      <SpeciesSection
+        profileId={profileId}
+        initial={initialSpecies}
+        supabase={supabase}
+      />
       <EnvResultsSection
         profileId={profileId}
         initial={initialEnvResults}
@@ -234,6 +241,160 @@ function parseNum(v: string): number | null {
 }
 function parseNullStr(v: string): string | null {
   return v.trim() === '' ? null : v.trim()
+}
+
+// ──────────────────────────────────────────────
+// 0. Especies y Razas
+// ──────────────────────────────────────────────
+const speciesOptions = [
+  { value: 'bovino', label: 'Bovino' },{ value: 'bufalino', label: 'Bufalino' },
+  { value: 'ovino', label: 'Ovino' },{ value: 'caprino', label: 'Caprino' },
+  { value: 'equino', label: 'Equino' },{ value: 'porcino', label: 'Porcino' },
+  { value: 'gallinas', label: 'Gallinas' },{ value: 'pollos', label: 'Pollos de engorda' },
+  { value: 'abejas', label: 'Abejas' },{ value: 'otro', label: 'Otro' },
+]
+
+const breedsBySpeciesMap: Record<string, string[]> = {
+  bovino: [
+    'Brahman','Nelore','Gyr','Guzerat','Indubrasil','Sardo Negro',
+    'Angus','Hereford','Charolais','Simmental','Limousin','Pardo Suizo',
+    'Holstein','Jersey','Normando','Montbéliarde',
+    'Brangus','Bradford','Braford','Santa Gertrudis','Girolando','F1',
+    'Criollo','Romosinuano','Blanco Orejinegro','Costeño con Cuernos','Hartón del Valle',
+    'Senepol','Bonsmara','Tuli',
+  ],
+  bufalino: ['Murrah','Mediterráneo','Jafarabadi','Carabao','Búfalo de río'],
+  ovino: ['Dorper','Katahdin','Pelibuey','Blackbelly','Suffolk','Hampshire','Santa Inés','Texel','Merino','Criollo'],
+  caprino: ['Boer','Nubia','Saanen','Alpina','Toggenburg','Murciana','LaMancha','Anglo-Nubian','Criollo'],
+  equino: ['Cuarto de Milla','Criollo','Paso Fino','Pura Sangre','Appaloosa','Árabe','Percherón'],
+  porcino: ['Duroc','Hampshire','Yorkshire','Landrace','Pietrain','Berkshire','Criollo','Pelón Mexicano'],
+}
+
+function SpeciesSection({
+  profileId,
+  initial,
+  supabase,
+}: {
+  profileId: string
+  initial: any[]
+  supabase: any
+}) {
+  const [selectedSpecies, setSelectedSpecies] = useState<string[]>(
+    initial.map((s: any) => s.species)
+  )
+  const [breedsBySpeciesState, setBreedsBySpeciesState] = useState<Record<string, string[]>>(() => {
+    const map: Record<string, string[]> = {}
+    initial.forEach((s: any) => {
+      if (s.breeds) {
+        const parts = s.breeds.split(',').map((b: string) => b.trim()).filter(Boolean)
+        const knownBreeds = breedsBySpeciesMap[s.species] || []
+        map[s.species] = parts.filter((b: string) => knownBreeds.includes(b))
+      }
+    })
+    return map
+  })
+  const [breedOtherBySpecies, setBreedOtherBySpecies] = useState<Record<string, string>>(() => {
+    const map: Record<string, string> = {}
+    initial.forEach((s: any) => {
+      if (s.breeds) {
+        const parts = s.breeds.split(',').map((b: string) => b.trim()).filter(Boolean)
+        const knownBreeds = breedsBySpeciesMap[s.species] || []
+        const others = parts.filter((b: string) => !knownBreeds.includes(b))
+        if (others.length > 0) map[s.species] = others.join(', ')
+      }
+    })
+    return map
+  })
+
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState({ type: '', text: '' })
+
+  const toggleSpecies = (sp: string) => {
+    setSelectedSpecies(prev =>
+      prev.includes(sp) ? prev.filter(s => s !== sp) : [...prev, sp]
+    )
+  }
+
+  const toggleBreed = (sp: string, breed: string) => {
+    setBreedsBySpeciesState(prev => {
+      const current = prev[sp] || []
+      return { ...prev, [sp]: current.includes(breed) ? current.filter(b => b !== breed) : [...current, breed] }
+    })
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setMsg({ type: '', text: '' })
+
+    await supabase.from('ranch_species').delete().eq('profile_id', profileId)
+
+    if (selectedSpecies.length > 0) {
+      const rows = selectedSpecies.map(sp => {
+        const speciesBreeds = breedsBySpeciesState[sp] || []
+        const otherBreed = breedOtherBySpecies[sp] || ''
+        const breedsStr = [...speciesBreeds, ...(otherBreed ? [otherBreed] : [])].join(', ')
+        return { profile_id: profileId, species: sp, breeds: breedsStr || null }
+      })
+      const { error } = await supabase.from('ranch_species').insert(rows)
+      if (error) {
+        setMsg({ type: 'error', text: `Error: ${error.message}` })
+        setSaving(false)
+        return
+      }
+    }
+
+    await logAdminAction(supabase, 'editar_especies', profileId, `Especies: ${selectedSpecies.join(', ')}`)
+    setMsg({ type: 'success', text: 'Especies y razas guardadas' })
+    setSaving(false)
+  }
+
+  return (
+    <CollapsibleSection title="Especies y razas" defaultOpen>
+      <Message msg={msg} />
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Especies</label>
+        <div className="flex flex-wrap gap-2">
+          {speciesOptions.map(opt => (
+            <label key={opt.value} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selectedSpecies.includes(opt.value) ? 'border-primary bg-green-50 text-primary font-medium' : 'border-gray-200'}`}>
+              <input type="checkbox" checked={selectedSpecies.includes(opt.value)} onChange={() => toggleSpecies(opt.value)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {selectedSpecies.filter(sp => breedsBySpeciesMap[sp]).map(sp => {
+        const speciesLabel = speciesOptions.find(o => o.value === sp)?.label || sp
+        const breeds = breedsBySpeciesMap[sp] || []
+        const selected = breedsBySpeciesState[sp] || []
+        return (
+          <div key={sp} className="mb-4 border border-gray-200 rounded-lg p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Razas de {speciesLabel}</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+              {breeds.map(b => (
+                <label key={b} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${selected.includes(b) ? 'border-primary bg-green-50 text-primary' : 'border-gray-200'}`}>
+                  <input type="checkbox" checked={selected.includes(b)} onChange={() => toggleBreed(sp, b)} className="rounded border-gray-300 text-primary focus:ring-primary" />
+                  {b}
+                </label>
+              ))}
+            </div>
+            <div className="mt-2">
+              <FieldText
+                label="Otra(s) raza(s)"
+                value={breedOtherBySpecies[sp] || ''}
+                onChange={(v) => setBreedOtherBySpecies(prev => ({ ...prev, [sp]: v }))}
+              />
+            </div>
+          </div>
+        )
+      })}
+
+      <div className="mt-4">
+        <SaveButton saving={saving} onClick={handleSave} />
+      </div>
+    </CollapsibleSection>
+  )
 }
 
 // ──────────────────────────────────────────────

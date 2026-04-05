@@ -48,6 +48,11 @@ export default async function AdminDatosPage(props: { params: Promise<{ id: stri
     .select('*')
     .eq('profile_id', id)
 
+  const { data: ranchSpecies } = await supabase
+    .from('ranch_species')
+    .select('*')
+    .eq('profile_id', id)
+
   return (
     <div className="p-6 sm:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
@@ -71,6 +76,7 @@ export default async function AdminDatosPage(props: { params: Promise<{ id: stri
         initialManagement={managementPractices}
         initialEnvResults={resultsEnvironmental || []}
         initialEconResults={resultsEconomic || []}
+        initialSpecies={ranchSpecies || []}
       />
     </div>
   )
