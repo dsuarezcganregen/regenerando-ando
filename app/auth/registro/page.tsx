@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import SocialLoginButtons from '@/components/SocialLoginButtons'
-import { sendTransactionalEmail } from '@/lib/send-email'
 
 export default function RegistroPage() {
   return (
@@ -103,19 +102,8 @@ function RegistroContent() {
         return
       }
 
-      // Send welcome email to user + notification to admin (non-blocking)
-      if (data.session?.access_token) {
-        sendTransactionalEmail({
-          type: 'welcome',
-          profileId: data.user.id,
-          token: data.session.access_token,
-        }).catch(() => {})
-        sendTransactionalEmail({
-          type: 'new_registration',
-          profileId: data.user.id,
-          token: data.session.access_token,
-        }).catch(() => {})
-      }
+      // Emails are NOT sent here — they are sent when registration is completed
+      // (in /registro handleSubmit) to avoid notifying about incomplete profiles
 
       window.location.href = '/registro'
       return
