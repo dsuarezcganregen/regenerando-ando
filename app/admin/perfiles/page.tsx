@@ -22,7 +22,12 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
 
   if (status) query = query.eq('status', status)
   if (searchParams.pais) query = query.eq('country', searchParams.pais)
-  if (searchParams.incomplete === '1') query = query.is('ranch_name', null)
+  if (searchParams.incomplete === '1') {
+    query = query.is('ranch_name', null)
+  } else {
+    // By default, exclude incomplete profiles (no ranch_name)
+    query = query.not('ranch_name', 'is', null)
+  }
   if (searchParams.q) {
     const q = searchParams.q
     // Check if the search term matches a country name, convert to code
@@ -58,11 +63,12 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
   const { data: profiles, count } = await query
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
-  // Get counts for tabs
-  const [{ count: cPendiente }, { count: cAprobado }, { count: cRechazado }] = await Promise.all([
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pendiente'),
+  // Get counts for tabs (exclude incomplete profiles without ranch_name)
+  const [{ count: cPendiente }, { count: cAprobado }, { count: cRechazado }, { count: cIncompleto }] = await Promise.all([
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pendiente').not('ranch_name', 'is', null),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'aprobado'),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'rechazado'),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).is('ranch_name', null),
   ])
 
   return (
@@ -71,10 +77,13 @@ export default async function PerfilesPage(props: { searchParams: Promise<{ stat
 
       {/* Status tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
-        <TabLink href="/admin/perfiles" label={`Todos (${(cPendiente || 0) + (cAprobado || 0) + (cRechazado || 0)})`} active={!status} />
+        <TabLink href="/admin/perfiles" label={`Todos (${(cPendiente || 0) + (cAprobado || 0) + (cRechazado || 0)})`} active={!status && searchParams.incomplete !== '1'} />
         <TabLink href="/admin/perfiles?status=pendiente" label={`Pendientes (${cPendiente || 0})`} active={status === 'pendiente'} />
         <TabLink href="/admin/perfiles?status=aprobado" label={`Aprobados (${cAprobado || 0})`} active={status === 'aprobado'} />
         <TabLink href="/admin/perfiles?status=rechazado" label={`Rechazados (${cRechazado || 0})`} active={status === 'rechazado'} />
+        {(cIncompleto || 0) > 0 && (
+          <TabLink href="/admin/perfiles?incomplete=1" label={`Incompletos (${cIncompleto})`} active={searchParams.incomplete === '1'} />
+        )}
       </div>
 
       <ProfileListAdmin

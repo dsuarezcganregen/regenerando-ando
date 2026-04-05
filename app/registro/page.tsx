@@ -468,6 +468,25 @@ export default function RegistroWizardPage() {
 
     await notifyAdmins(supabase, 'profile_edited', `${ranchName || fullName} completó su registro`, `Nuevo ganadero: ${fullName} (${ranchName}). Revisar para aprobar.`, userId)
 
+    // Send welcome + admin notification emails (only after completing registration)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token) {
+        await fetch('/api/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'welcome', profileId: userId, token: session.access_token }),
+        })
+        await fetch('/api/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new_registration', profileId: userId, token: session.access_token }),
+        })
+      }
+    } catch {
+      // non-blocking
+    }
+
     setSaving(false)
     setSubmitted(true)
     setStep(8)
