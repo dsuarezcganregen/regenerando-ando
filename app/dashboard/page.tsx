@@ -181,7 +181,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardNarrative
-      counters={{ ranchers: totalRanchers, countries: totalCountries, species: totalSpecies }}
+      counters={{ ranchers: totalRanchers, countries: totalCountries, species: totalSpecies, hectares: Math.round(opAll?.reduce((s, o) => s + (Number(o.total_hectares) || 0), 0) || 0) }}
       verdict={{
         wouldNotElimPct: pct(wouldNotElim, econCount),
         wouldRecommendPct: pct(wouldRecommend, econCount),

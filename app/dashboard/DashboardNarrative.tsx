@@ -9,7 +9,7 @@ const DashboardMiniMap = dynamic(() => import('@/components/DashboardMiniMap'), 
 
 // ─── Types ────────────────────────────────────────────
 interface Props {
-  counters: { ranchers: number; countries: number; species: number }
+  counters: { ranchers: number; countries: number; species: number; hectares: number }
   verdict: { wouldNotElimPct: number; wouldRecommendPct: number; totalWithResults: number }
   ecosystems: {
     data: { name: string; value: number }[]
@@ -190,7 +190,16 @@ function HeroSection({ counters }: { counters: Props['counters'] }) {
           <span className="text-emerald-300">Es una realidad global que funciona.</span>
         </h1>
 
-        <div className="mt-12 sm:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
+        {/* Hectares — big number */}
+        <div className="mt-12 sm:mt-16 bg-white/95 backdrop-blur-sm rounded-2xl px-8 py-10 text-center shadow-lg max-w-2xl mx-auto">
+          <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-primary">
+            <AnimatedNumber value={counters.hectares} inView={inView} />
+          </div>
+          <div className="text-lg sm:text-xl text-gray-600 mt-3 font-medium">hectáreas en ganadería regenerativa</div>
+        </div>
+
+        {/* 3 counters */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
           {[
             { icon: <IconPeople />, value: counters.ranchers, label: 'Ganaderos registrados' },
             { icon: <IconFlag />, value: counters.countries, label: 'Países representados' },
