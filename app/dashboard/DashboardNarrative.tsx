@@ -289,7 +289,7 @@ function EcosystemSection({ ecosystems, counters }: { ecosystems: Props['ecosyst
 
           {/* Card 1 — Altitudes */}
           <div className="relative rounded-2xl overflow-hidden">
-            <img src="/images/dashboard/altitudes.png" alt="Corte transversal de altitudes" className="w-full h-auto block" loading="lazy" />
+            <picture><source srcSet="/images/dashboard/altitudes.webp" type="image/webp" /><img src="/images/dashboard/altitudes.png" alt="Corte transversal de altitudes" className="w-full h-auto block" loading="lazy" /></picture>
             {/* Badge top-right */}
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
               <span className="text-xs sm:text-sm font-semibold text-gray-800">&gt;{fmt(altMax)} msnm</span>
@@ -313,7 +313,7 @@ function EcosystemSection({ ecosystems, counters }: { ecosystems: Props['ecosyst
 
           {/* Card 2 — Ecosistemas */}
           <div className="relative rounded-2xl overflow-hidden">
-            <img src="/images/dashboard/ecosistemas.png" alt="Corte transversal de ecosistemas" className="w-full h-auto block" loading="lazy" />
+            <picture><source srcSet="/images/dashboard/ecosistemas.webp" type="image/webp" /><img src="/images/dashboard/ecosistemas.png" alt="Corte transversal de ecosistemas" className="w-full h-auto block" loading="lazy" /></picture>
             {/* Ecosystem badges - hidden on mobile, shown on sm+ */}
             <div className="hidden sm:block">
               <div className="absolute bottom-16 left-[15%] -translate-x-1/2 bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5">
@@ -341,7 +341,7 @@ function EcosystemSection({ ecosystems, counters }: { ecosystems: Props['ecosyst
 
           {/* Card 3 — Precipitación */}
           <div className="relative rounded-2xl overflow-hidden">
-            <img src="/images/dashboard/precipitacion.png" alt="Corte transversal de precipitación" className="w-full h-auto block" loading="lazy" />
+            <picture><source srcSet="/images/dashboard/precipitacion.webp" type="image/webp" /><img src="/images/dashboard/precipitacion.png" alt="Corte transversal de precipitación" className="w-full h-auto block" loading="lazy" /></picture>
             {/* Badge bottom-left */}
             <div className="absolute bottom-14 left-3 sm:bottom-16 sm:left-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
               <span className="text-xs sm:text-sm font-semibold text-gray-800">{fmt(precMin)} mm/año</span>
