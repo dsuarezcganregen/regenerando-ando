@@ -162,7 +162,7 @@ export default function DashboardNarrative(props: Props) {
     <div className="bg-white">
       <HeroSection counters={counters} />
       <VerdictSection verdict={verdict} />
-      <EcosystemSection ecosystems={ecosystems} />
+      <EcosystemSection ecosystems={ecosystems} counters={counters} />
       <EvidenceSection evidence={evidence} totalWithResults={verdict.totalWithResults} />
       <SystemsSection systems={systems} />
       <GeographySection geography={geography} />
@@ -271,122 +271,98 @@ function VerdictSection({ verdict }: { verdict: Props['verdict'] }) {
 }
 
 // ═══════════════════════════════════════════════════════
-// SECTION 3 — ECOSYSTEMS
+// SECTION 3 — ECOSYSTEMS (Image cards)
 // ═══════════════════════════════════════════════════════
-function EcosystemSection({ ecosystems }: { ecosystems: Props['ecosystems'] }) {
-  const { ref, inView } = useInView(0.15)
+function EcosystemSection({ ecosystems, counters }: { ecosystems: Props['ecosystems']; counters: Props['counters'] }) {
+  const { ref, inView } = useInView(0.1)
   const { altMin, altMax, precMin, precMax, data } = ecosystems
-
-  // Group ecosystems for the landscape cards
-  const tropical = data.filter(d => d.name.includes('tropical') || d.name.includes('Humedal'))
-  const temperate = data.filter(d => d.name.includes('Pastizal') || d.name.includes('Sabana') || d.name.includes('agroforestal') || d.name.includes('templado'))
-  const arid = data.filter(d => d.name.includes('Semiárido') || d.name.includes('Páramo'))
-  const tropicalCount = tropical.reduce((s, d) => s + d.value, 0)
-  const temperateCount = temperate.reduce((s, d) => s + d.value, 0)
-  const aridCount = arid.reduce((s, d) => s + d.value, 0)
+  const topEcosystem = data.length > 0 ? data[0].name : 'Pastizal'
+  const fmt = (n: number) => n.toLocaleString('es-MX')
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-gray-50">
       <div className="max-w-6xl mx-auto px-6">
         <SectionHeader title="Funciona en todas las condiciones"
-          subtitle={`Ganaderos regenerativos desde el nivel del mar hasta los ${altMax?.toLocaleString('es-MX')} msnm, en climas de ${precMin?.toLocaleString('es-MX')} a más de ${precMax?.toLocaleString('es-MX')} mm de lluvia al año`} />
+          subtitle={`Ganaderos regenerativos desde el nivel del mar hasta los ${fmt(altMax)} msnm, en climas de ${fmt(precMin)} a más de ${fmt(precMax)} mm de lluvia al año`} />
 
-        {/* Landscape SVG infographic */}
-        <div className={`mt-12 transition-all duration-1000 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="relative bg-gradient-to-b from-sky-100 to-sky-50 rounded-3xl overflow-hidden p-4 sm:p-8">
-            <svg viewBox="0 0 1000 300" className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-              {/* Sky */}
-              <defs>
-                <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#87CEEB" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0.1" />
-                </linearGradient>
-                <linearGradient id="tropical" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#059669" /><stop offset="100%" stopColor="#047857" />
-                </linearGradient>
-                <linearGradient id="savanna" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#65A30D" /><stop offset="100%" stopColor="#4D7C0F" />
-                </linearGradient>
-                <linearGradient id="aridGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#A16207" /><stop offset="100%" stopColor="#854D0E" />
-                </linearGradient>
-              </defs>
+        <div className={`mt-12 space-y-6 sm:space-y-8 max-w-5xl mx-auto transition-all duration-1000 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
-              {/* Terrain profile - rising from left (sea level) to right (mountain) */}
-              <path d="M0 280 Q50 280 100 270 Q200 255 300 240 Q400 220 500 190 Q600 160 700 130 Q800 90 850 60 Q900 40 950 50 Q980 55 1000 60 L1000 300 L0 300 Z"
-                fill="url(#tropical)" opacity="0.2" />
-
-              {/* Tropical zone (left) */}
-              <path d="M0 280 Q80 275 150 265 Q200 258 280 245 L280 300 L0 300 Z" fill="url(#tropical)" opacity="0.6" />
-              {/* Trees */}
-              <circle cx="60" cy="258" r="18" fill="#059669" opacity="0.7" />
-              <circle cx="90" cy="252" r="22" fill="#047857" opacity="0.6" />
-              <circle cx="130" cy="248" r="20" fill="#059669" opacity="0.7" />
-              <circle cx="170" cy="244" r="18" fill="#047857" opacity="0.6" />
-              <circle cx="210" cy="238" r="15" fill="#059669" opacity="0.7" />
-              <rect x="58" y="258" width="4" height="22" fill="#6B4423" rx="1" />
-              <rect x="88" y="252" width="4" height="28" fill="#6B4423" rx="1" />
-              <rect x="128" y="248" width="4" height="32" fill="#6B4423" rx="1" />
-
-              {/* Savanna/temperate zone (middle) */}
-              <path d="M280 245 Q400 220 520 190 L520 300 L280 300 Z" fill="url(#savanna)" opacity="0.5" />
-              {/* Grass tufts */}
-              {[320, 360, 400, 440, 480].map((x, i) => (
-                <g key={i}>
-                  <path d={`M${x} ${235 - i * 8} q5-12 0-20 q-5 12 0 20`} fill="#84CC16" opacity="0.7" />
-                  <path d={`M${x + 5} ${237 - i * 8} q3-10 0-16 q-3 10 0 16`} fill="#65A30D" opacity="0.6" />
-                </g>
-              ))}
-
-              {/* Arid/mountain zone (right) */}
-              <path d="M520 190 Q650 140 750 100 Q820 70 870 50 Q920 35 960 45 Q990 50 1000 55 L1000 300 L520 300 Z"
-                fill="url(#aridGrad)" opacity="0.4" />
-              {/* Mountain peaks */}
-              <path d="M800 100 L850 50 L900 90 Z" fill="#9CA3AF" opacity="0.3" />
-              <path d="M850 50 L870 35 L890 50 Z" fill="#E5E7EB" opacity="0.5" />
-              {/* Cacti */}
-              <rect x="700" y="105" width="6" height="30" fill="#A16207" rx="3" opacity="0.6" />
-              <rect x="696" y="115" width="5" height="12" fill="#A16207" rx="2" opacity="0.6" transform="rotate(-30 696 115)" />
-              <rect x="760" y="85" width="5" height="25" fill="#A16207" rx="2" opacity="0.6" />
-
-              {/* Labels */}
-              <text x="140" y="298" textAnchor="middle" fill="#047857" fontSize="14" fontWeight="600">Bosque tropical</text>
-              <text x="400" y="298" textAnchor="middle" fill="#4D7C0F" fontSize="14" fontWeight="600">Pastizal / Sabana</text>
-              <text x="750" y="298" textAnchor="middle" fill="#854D0E" fontSize="14" fontWeight="600">Semiárido / Páramo</text>
-
-              {/* Altitude labels */}
-              <text x="30" y="268" fill="#6B7280" fontSize="11" fontWeight="500">Nivel del mar</text>
-              <text x="870" y="30" fill="#6B7280" fontSize="11" fontWeight="500">{`>${(altMax || 3000).toLocaleString('es-MX')} msnm`}</text>
-
-              {/* Dashed altitude line */}
-              <line x1="0" y1="280" x2="960" y2="42" stroke="#9CA3AF" strokeWidth="1" strokeDasharray="6 4" opacity="0.4" />
-            </svg>
-
-            {/* Precipitation bar below */}
-            <div className="mt-4 px-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-amber-700 font-medium whitespace-nowrap">{precMin?.toLocaleString('es-MX')} mm/a</span>
-                <div className="flex-1 h-3 rounded-full" style={{ background: 'linear-gradient(to right, #D97706, #65A30D, #0F6E56, #0369A1)' }} />
-                <span className="text-xs text-blue-700 font-medium whitespace-nowrap">{`>${precMax?.toLocaleString('es-MX')} mm/a`}</span>
+          {/* Card 1 — Altitudes */}
+          <div className="relative rounded-2xl overflow-hidden">
+            <img src="/images/dashboard/altitudes.png" alt="Corte transversal de altitudes" className="w-full h-auto block" loading="lazy" />
+            {/* Badge top-right */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <span className="text-xs sm:text-sm font-semibold text-gray-800">&gt;{fmt(altMax)} msnm</span>
+            </div>
+            {/* Badge bottom-left */}
+            <div className="absolute bottom-14 left-3 sm:bottom-16 sm:left-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <span className="text-xs sm:text-sm font-semibold text-gray-800">{fmt(altMin)} msnm</span>
+            </div>
+            {/* Bottom bar */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-4 py-2.5 sm:px-6 sm:py-3">
+              <div className="flex items-center justify-between text-white text-xs sm:text-sm">
+                <span>Nivel del mar</span>
+                <span className="font-semibold">{fmt(counters.ranchers)} ganaderos en este rango</span>
+                <span>{fmt(altMax)}+ msnm</span>
               </div>
-              <p className="text-center text-xs text-gray-400 mt-1">Precipitación anual</p>
+              <div className="mt-2 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-400 rounded-full" style={{ width: '87%' }} />
+              </div>
             </div>
           </div>
 
-          {/* Ecosystem count cards */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { label: 'Bosque tropical', count: tropicalCount, color: 'bg-emerald-50 border-emerald-200', textColor: 'text-emerald-700', icon: '🌳' },
-              { label: 'Pastizal y sabana', count: temperateCount, color: 'bg-lime-50 border-lime-200', textColor: 'text-lime-700', icon: '🌾' },
-              { label: 'Semiárido y páramo', count: aridCount, color: 'bg-amber-50 border-amber-200', textColor: 'text-amber-700', icon: '🏜️' },
-            ].map((eco, i) => (
-              <div key={i} className={`${eco.color} border rounded-2xl p-6 text-center`}>
-                <div className="text-3xl mb-2">{eco.icon}</div>
-                <div className={`text-2xl font-bold ${eco.textColor}`}>{eco.count}</div>
-                <div className="text-sm text-gray-600 mt-1">{eco.label}</div>
+          {/* Card 2 — Ecosistemas */}
+          <div className="relative rounded-2xl overflow-hidden">
+            <img src="/images/dashboard/ecosistemas.png" alt="Corte transversal de ecosistemas" className="w-full h-auto block" loading="lazy" />
+            {/* Ecosystem badges - hidden on mobile, shown on sm+ */}
+            <div className="hidden sm:block">
+              <div className="absolute bottom-16 left-[15%] -translate-x-1/2 bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                <span className="text-sm font-medium text-gray-800">Bosque tropical</span>
               </div>
-            ))}
+              <div className="absolute bottom-16 left-[50%] -translate-x-1/2 bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                <span className="text-sm font-medium text-gray-800">Pastizal / Sabana</span>
+              </div>
+              <div className="absolute bottom-16 left-[85%] -translate-x-1/2 bg-white/85 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                <span className="text-sm font-medium text-gray-800">Semiárido</span>
+              </div>
+            </div>
+            {/* Bottom bar */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-4 py-2.5 sm:px-6 sm:py-3">
+              <div className="flex items-center justify-between text-white text-xs sm:text-sm">
+                <span>{topEcosystem}</span>
+                <span className="font-semibold">{fmt(counters.countries)} países</span>
+                <span>{fmt(counters.hectares)} hectáreas</span>
+              </div>
+              <div className="mt-2 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-400 rounded-full" style={{ width: '100%' }} />
+              </div>
+            </div>
           </div>
+
+          {/* Card 3 — Precipitación */}
+          <div className="relative rounded-2xl overflow-hidden">
+            <img src="/images/dashboard/precipitacion.png" alt="Corte transversal de precipitación" className="w-full h-auto block" loading="lazy" />
+            {/* Badge bottom-left */}
+            <div className="absolute bottom-14 left-3 sm:bottom-16 sm:left-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <span className="text-xs sm:text-sm font-semibold text-gray-800">{fmt(precMin)} mm/año</span>
+            </div>
+            {/* Badge bottom-right */}
+            <div className="absolute bottom-14 right-3 sm:bottom-16 sm:right-4 bg-white/85 backdrop-blur-sm rounded-lg px-2 py-1 sm:px-3 sm:py-1.5">
+              <span className="text-xs sm:text-sm font-semibold text-gray-800">&gt;{fmt(precMax)} mm/año</span>
+            </div>
+            {/* Bottom bar */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm px-4 py-2.5 sm:px-6 sm:py-3">
+              <div className="flex items-center justify-between text-white text-xs sm:text-sm">
+                <span>Seco</span>
+                <span className="font-semibold">{fmt(counters.ranchers)} ganaderos cubriendo todo el rango</span>
+                <span>Muy húmedo</span>
+              </div>
+              <div className="mt-2 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: '100%', background: 'linear-gradient(to right, #F2C94C, #5CB88A, #5A9AB8)' }} />
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
