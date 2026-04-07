@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, AreaChart, Area } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, AreaChart, Area, ComposedChart } from 'recharts'
 
 const DashboardMiniMap = dynamic(() => import('@/components/DashboardMiniMap'), { ssr: false })
 
@@ -33,7 +33,7 @@ interface Props {
     totalRanchers: number
   }
   deepDive: {
-    growthData: { month: string; total: number }[]
+    growthData: { year: string; total: number; new: number }[]
     bizData: { name: string; value: number }[]
     sizeData: { name: string; value: number }[]
   }
@@ -614,67 +614,63 @@ function GeographySection({ geography }: { geography: Props['geography'] }) {
 // SECTION 7 — DEEP DIVE (Accordions)
 // ═══════════════════════════════════════════════════════
 function DeepDiveSection({ deepDive }: { deepDive: Props['deepDive'] }) {
+  const { ref, inView } = useInView(0.1)
   return (
-    <section className="py-20 sm:py-28 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-6">
+    <section ref={ref} className="py-20 sm:py-28 bg-gray-50">
+      <div className="max-w-5xl mx-auto px-6">
         <SectionHeader title="Para profundizar" subtitle="Más datos de la ganadería regenerativa" />
 
-        <div className="mt-12 space-y-4">
-          <Accordion title="Crecimiento de la adopción">
-            <div className="bg-white rounded-xl p-4 sm:p-6">
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={deepDive.growthData} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0F6E56" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#0F6E56" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="total" stroke="#0F6E56" strokeWidth={2} fill="url(#areaGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </Accordion>
+        <div className={`mt-12 space-y-10 transition-all duration-1000 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 
-          <Accordion title="Tipos de ganadería">
-            <div className="bg-white rounded-xl p-4 sm:p-6">
-              <ResponsiveContainer width="100%" height={Math.max(deepDive.bizData.length * 45, 200)}>
-                <BarChart data={deepDive.bizData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#1D9E75" radius={[0, 8, 8, 0]} barSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Accordion>
+          {/* 1. Adoption growth */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Crecimiento de la adopción</h3>
+            <p className="text-sm text-gray-500 mb-6">Año en que los ganaderos iniciaron prácticas regenerativas</p>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={deepDive.growthData} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="areaGrad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#0F6E56" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#0F6E56" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(v: any, name: any) => [v, name === 'total' ? 'Acumulado' : 'Nuevos ese año']} labelFormatter={(l: any) => `Año ${l}`} />
+                <Bar dataKey="new" fill="#1D9E75" opacity={0.4} radius={[4, 4, 0, 0]} name="new" />
+                <Area type="monotone" dataKey="total" stroke="#0F6E56" strokeWidth={2} fill="url(#areaGrad2)" name="total" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
 
-          <Accordion title="Distribución por tamaño de finca">
-            <div className="bg-white rounded-xl p-4 sm:p-6">
-              <p className="text-sm text-gray-500 mb-4">La ganadería regenerativa funciona en cualquier escala</p>
-              <ResponsiveContainer width="100%" height={Math.max(deepDive.sizeData.length * 45, 200)}>
-                <BarChart data={deepDive.sizeData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#0F6E56" radius={[0, 8, 8, 0]} barSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Accordion>
-        </div>
+          {/* 2. Tipos de ganadería */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Tipos de ganadería</h3>
+            <p className="text-sm text-gray-500 mb-6">Distribución por modelo productivo</p>
+            <ResponsiveContainer width="100%" height={Math.max(deepDive.bizData.length * 50, 200)}>
+              <BarChart data={deepDive.bizData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 13 }} />
+                <Tooltip formatter={(v: any) => [v, 'Ganaderos']} />
+                <Bar dataKey="value" fill="#1D9E75" radius={[0, 8, 8, 0]} barSize={30} label={{ position: 'right', fontSize: 13, fill: '#374151', fontWeight: 600 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* PDF placeholder */}
-        <div className="mt-10 text-center">
-          <button className="border-2 border-gray-300 text-gray-500 px-6 py-3 rounded-xl text-sm font-medium cursor-not-allowed opacity-70 inline-flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M12 18v-6" /><path d="M9 15l3 3 3-3" />
-            </svg>
-            Descargar resumen de datos (PDF) — Próximamente
-          </button>
+          {/* 3. Distribución por tamaño */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Distribución por tamaño de finca</h3>
+            <p className="text-sm text-gray-500 mb-6">La ganadería regenerativa funciona en cualquier escala</p>
+            <ResponsiveContainer width="100%" height={Math.max(deepDive.sizeData.length * 50, 200)}>
+              <BarChart data={deepDive.sizeData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 13 }} />
+                <Tooltip formatter={(v: any) => [v, 'Ganaderos']} />
+                <Bar dataKey="value" fill="#0F6E56" radius={[0, 8, 8, 0]} barSize={30} label={{ position: 'right', fontSize: 13, fill: '#374151', fontWeight: 600 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
         </div>
       </div>
     </section>

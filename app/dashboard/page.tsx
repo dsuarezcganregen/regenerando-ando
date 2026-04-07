@@ -166,17 +166,18 @@ export default async function DashboardPage() {
     value: opAll?.filter(o => o.total_hectares && Number(o.total_hectares) >= r.min && Number(o.total_hectares) <= r.max).length || 0,
   })).filter(d => d.value > 0)
 
-  const monthCounts: Record<string, number> = {}
-  allProfiles?.forEach(p => {
-    const d = new Date(p.created_at)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    monthCounts[key] = (monthCounts[key] || 0) + 1
+  // Adoption growth by year_started_regen
+  const yearCounts: Record<number, number> = {}
+  opAll?.forEach(o => {
+    if (o.year_started_regen && o.year_started_regen >= 1980 && o.year_started_regen <= new Date().getFullYear()) {
+      yearCounts[o.year_started_regen] = (yearCounts[o.year_started_regen] || 0) + 1
+    }
   })
-  const sortedMonths = Object.keys(monthCounts).sort()
+  const sortedYears = Object.keys(yearCounts).map(Number).sort((a, b) => a - b)
   let cumulative = 0
-  const growthData = sortedMonths.map(m => {
-    cumulative += monthCounts[m]
-    return { month: m, total: cumulative }
+  const growthData = sortedYears.map(y => {
+    cumulative += yearCounts[y]
+    return { year: String(y), total: cumulative, new: yearCounts[y] }
   })
 
   return (
