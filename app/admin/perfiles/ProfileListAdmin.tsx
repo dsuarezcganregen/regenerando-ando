@@ -116,6 +116,7 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     if (searchParams.q) params.set('q', searchParams.q)
     if (searchParams.sort) params.set('sort', searchParams.sort)
     if (searchParams.dir) params.set('dir', searchParams.dir)
+    if (searchParams.incomplete) params.set('incomplete', searchParams.incomplete)
     if (page > 1) params.set('page', page.toString())
     return `/admin/perfiles?${params.toString()}`
   }
