@@ -87,6 +87,7 @@ export default function NotificationBell({ userId, openUpward = false }: { userI
     profile_rejected: '❌',
     profile_pending: '⏳',
     profile_edited: '📝',
+    new_message: '💬',
   }
 
   return (

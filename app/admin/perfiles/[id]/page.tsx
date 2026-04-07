@@ -76,6 +76,12 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
 
       {/* Contact buttons */}
       <div className="mb-6 flex flex-wrap gap-2">
+        <a
+          href={`/admin/mensajes?user=${profile.id}&name=${encodeURIComponent(profile.ranch_name || profile.full_name)}`}
+          className="inline-flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-lg text-sm hover:bg-primary/20 transition-colors font-medium"
+        >
+          <span>💬</span> Enviar mensaje interno
+        </a>
         {profile.email && (
           <a
             href={`mailto:${profile.email}?subject=Regenerando Ando — ${profile.ranch_name || profile.full_name}`}

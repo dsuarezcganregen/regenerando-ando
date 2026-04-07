@@ -74,6 +74,7 @@ export default function MensajesGanaderoPage() {
             otherUserId={adminId}
             otherUserName={adminName}
             conversationId={conversationId}
+            recipientProfileId={adminId}
           />
         </div>
       </div>

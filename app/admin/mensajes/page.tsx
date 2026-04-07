@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import ChatWindow from '@/components/ChatWindow'
 
@@ -26,6 +26,7 @@ export default function AdminMensajesPage() {
   const [selectedUser, setSelectedUser] = useState<Conversation | null>(null)
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     async function load() {
@@ -44,42 +45,48 @@ export default function AdminMensajesPage() {
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
 
-      if (!messages || messages.length === 0) {
-        setLoading(false)
-        return
-      }
-
       // Group by conversation partner
       const convMap = new Map<string, { messages: any[] }>()
-      for (const msg of messages) {
-        const partnerId = msg.sender_id === user.id ? msg.recipient_id : msg.sender_id
-        if (!convMap.has(partnerId)) {
-          convMap.set(partnerId, { messages: [] })
+      if (messages) {
+        for (const msg of messages) {
+          const partnerId = msg.sender_id === user.id ? msg.recipient_id : msg.sender_id
+          if (!convMap.has(partnerId)) {
+            convMap.set(partnerId, { messages: [] })
+          }
+          convMap.get(partnerId)!.messages.push(msg)
         }
-        convMap.get(partnerId)!.messages.push(msg)
       }
 
       // Get profile names for each partner
       const partnerIds = Array.from(convMap.keys())
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, ranch_name')
-        .in('id', partnerIds)
+
+      // Check if we need to open a conversation from query params
+      const targetUserId = searchParams.get('user')
+      const targetUserName = searchParams.get('name')
+
+      // If target user is not in existing conversations, add them
+      if (targetUserId && !convMap.has(targetUserId)) {
+        partnerIds.push(targetUserId)
+      }
+
+      const { data: profiles } = partnerIds.length > 0
+        ? await supabase.from('profiles').select('id, full_name, ranch_name').in('id', partnerIds)
+        : { data: [] }
 
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || [])
 
       const convList: Conversation[] = partnerIds.map((partnerId) => {
-        const conv = convMap.get(partnerId)!
+        const conv = convMap.get(partnerId)
         const profile = profileMap.get(partnerId)
-        const lastMsg = conv.messages[0]
-        const unread = conv.messages.filter((m: any) => m.recipient_id === user.id && !m.read).length
+        const lastMsg = conv?.messages[0]
+        const unread = conv?.messages.filter((m: any) => m.recipient_id === user.id && !m.read).length || 0
 
         return {
           userId: partnerId,
-          name: profile?.full_name || 'Usuario',
+          name: profile?.full_name || targetUserName || 'Usuario',
           ranchName: profile?.ranch_name || null,
-          lastMessage: lastMsg.body,
-          lastDate: lastMsg.created_at,
+          lastMessage: lastMsg?.body || '',
+          lastDate: lastMsg?.created_at || new Date().toISOString(),
           unread,
         }
       })
@@ -92,6 +99,13 @@ export default function AdminMensajesPage() {
       })
 
       setConversations(convList)
+
+      // Auto-select target user conversation
+      if (targetUserId) {
+        const targetConv = convList.find(c => c.userId === targetUserId)
+        if (targetConv) setSelectedUser(targetConv)
+      }
+
       setLoading(false)
     }
     load()
@@ -175,6 +189,8 @@ export default function AdminMensajesPage() {
                 otherUserId={selectedUser.userId}
                 otherUserName={selectedUser.ranchName || selectedUser.name}
                 conversationId={generateConversationId(adminId, selectedUser.userId)}
+                currentUserName="Regenerando Ando"
+                recipientProfileId={selectedUser.userId}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">

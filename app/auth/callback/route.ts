@@ -30,8 +30,12 @@ export async function GET(request: Request) {
         }
       }
 
-      // Regular user → check if profile exists
-      const { data: existingProfile } = await supabase
+      // Regular user → check if profile exists (use admin client to bypass RLS)
+      const adminClient = serviceKey
+        ? createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey)
+        : supabase
+
+      const { data: existingProfile } = await adminClient
         .from('profiles')
         .select('id, ranch_name')
         .eq('id', data.user.id)
@@ -41,7 +45,7 @@ export async function GET(request: Request) {
         const fullName = data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Sin nombre'
         const userEmail = data.user.email || ''
 
-        await supabase.from('profiles').insert({
+        await adminClient.from('profiles').insert({
           id: data.user.id,
           full_name: fullName,
           email: userEmail,

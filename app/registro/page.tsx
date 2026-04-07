@@ -484,15 +484,16 @@ export default function RegistroWizardPage() {
     if (!validate() || !userId) return
     setSaving(true); setError('')
 
-    // Profile
-    await supabase.from('profiles').update({
+    // Profile (upsert to handle cases where profile wasn't created during auth)
+    await supabase.from('profiles').upsert({
+      id: userId,
       full_name: fullName, ranch_name: ranchName || null, description: description || null, email,
       phone: phone || null, phone_country_code: phoneCode, website: website || null,
       instagram: instagram || null, facebook: facebook || null, youtube: youtube || null, tiktok: tiktok || null,
       offers_courses: offersCourses, courses_description: coursesDesc || null,
       products_description: selectedProducts.join(', ') + (productOther ? `, ${productOther}` : '') || null,
       logo_url: logoUrl || null, consent_publish: consentPublish, consent_privacy: consentPrivacy,
-    }).eq('id', userId)
+    }, { onConflict: 'id' })
 
     // Location
     const locData: any = {

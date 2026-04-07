@@ -52,6 +52,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const transporter = getTransporter()
+
+    // Handle new_message separately (uses recipientId instead of profileId)
+    if (type === 'new_message') {
+      const { recipientId, senderName, messagePreview } = body
+
+      // Get recipient profile
+      const { data: recipient } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', recipientId)
+        .single()
+
+      if (!recipient || !recipient.email) {
+        return NextResponse.json({ error: 'Destinatario no encontrado' }, { status: 404 })
+      }
+
+      await sendNewMessageEmail(transporter, recipient, senderName, messagePreview)
+      return NextResponse.json({ success: true })
+    }
+
     // Get profile info
     const { data: profile } = await supabaseAdmin
       .from('profiles')
@@ -62,8 +83,6 @@ export async function POST(request: NextRequest) {
     if (!profile || !profile.email) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 })
     }
-
-    const transporter = getTransporter()
 
     switch (type) {
       case 'approved':
@@ -256,6 +275,40 @@ async function sendNewRegistrationToAdmin(transporter: nodemailer.Transporter, p
           Revisar en el panel
         </a>
       </div>
+    `),
+  })
+}
+
+async function sendNewMessageEmail(
+  transporter: nodemailer.Transporter,
+  recipient: { full_name: string; email: string },
+  senderName: string,
+  messagePreview: string
+) {
+  const preview = messagePreview.length > 200 ? messagePreview.slice(0, 200) + '...' : messagePreview
+
+  await transporter.sendMail({
+    from: `${FROM_NAME} <${FROM_EMAIL}>`,
+    to: recipient.email,
+    subject: `💬 Nuevo mensaje de ${senderName} en Regenerando Ando`,
+    html: baseTemplate(`
+      <h1 style="color: #0F6E56; font-size: 24px; margin-bottom: 16px;">
+        Tienes un nuevo mensaje
+      </h1>
+      <p style="font-size: 16px; color: #333; line-height: 1.6;">
+        Hola <strong>${recipient.full_name}</strong>, <strong>${senderName}</strong> te ha enviado un mensaje:
+      </p>
+      <div style="background-color: #F3F4F6; border-left: 4px solid #0F6E56; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0;">
+        <p style="font-size: 15px; color: #333; margin: 0; line-height: 1.6; font-style: italic;">"${preview}"</p>
+      </div>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://regenerandoando.com/mi-perfil/mensajes" style="background-color: #0F6E56; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block;">
+          Ver mis mensajes
+        </a>
+      </div>
+      <p style="font-size: 14px; color: #666; line-height: 1.6;">
+        Puedes responder directamente desde tu panel en Regenerando Ando.
+      </p>
     `),
   })
 }

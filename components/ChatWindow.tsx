@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { createNotification } from '@/lib/notifications'
 
 interface Message {
   id: string
@@ -17,6 +18,8 @@ interface ChatWindowProps {
   otherUserId: string
   otherUserName: string
   conversationId: string
+  currentUserName?: string
+  recipientProfileId?: string
 }
 
 export default function ChatWindow({
@@ -24,6 +27,8 @@ export default function ChatWindow({
   otherUserId,
   otherUserName,
   conversationId,
+  currentUserName,
+  recipientProfileId,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -69,6 +74,7 @@ export default function ChatWindow({
     e.preventDefault()
     if (!newMessage.trim() || sending) return
     setSending(true)
+    const messageText = newMessage.trim()
 
     const { error } = await supabase.from('messages').insert({
       conversation_id: conversationId,
@@ -87,6 +93,46 @@ export default function ChatWindow({
     setNewMessage('')
     setSending(false)
     await loadMessages()
+
+    // Send email notification and in-app notification (fire and forget)
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      const token = session?.session?.access_token
+      const targetProfileId = recipientProfileId || otherUserId
+
+      // Create in-app notification
+      await createNotification(
+        supabase,
+        otherUserId,
+        'new_message',
+        `Nuevo mensaje de ${currentUserName || 'Regenerando Ando'}`,
+        messageText.length > 100 ? messageText.slice(0, 100) + '...' : messageText,
+        targetProfileId
+      )
+
+      // Send email notification — throttled: max 1 email per conversation every 10 minutes
+      const emailThrottleKey = `ra_msg_email_${conversationId}`
+      const lastEmailSent = localStorage.getItem(emailThrottleKey)
+      const tenMinutes = 10 * 60 * 1000
+      const shouldSendEmail = !lastEmailSent || (Date.now() - Number(lastEmailSent)) > tenMinutes
+
+      if (token && shouldSendEmail) {
+        localStorage.setItem(emailThrottleKey, String(Date.now()))
+        fetch('/api/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_message',
+            token,
+            recipientId: targetProfileId,
+            senderName: currentUserName || 'Regenerando Ando',
+            messagePreview: messageText,
+          }),
+        }).catch(() => {})
+      }
+    } catch {
+      // Non-critical: don't block the chat if notification/email fails
+    }
   }
 
   const formatTime = (date: string) => {
