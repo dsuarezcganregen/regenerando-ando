@@ -61,6 +61,7 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     if (currentStatus) params.set('status', currentStatus)
     if (searchParams.pais) params.set('pais', searchParams.pais)
     if (searchParams.q) params.set('q', searchParams.q)
+    if (searchParams.incomplete) params.set('incomplete', searchParams.incomplete)
     params.set('sort', field)
     params.set('dir', currentSort === field && currentDir === 'asc' ? 'desc' : 'asc')
     return `/admin/perfiles?${params.toString()}`
@@ -78,8 +79,9 @@ export default function ProfileListAdmin({ profiles, currentStatus, adminRole, t
     if (searchInput.trim()) params.set('q', searchInput.trim())
     if (searchParams.sort) params.set('sort', searchParams.sort)
     if (searchParams.dir) params.set('dir', searchParams.dir)
+    if (searchParams.incomplete) params.set('incomplete', searchParams.incomplete)
     router.push(`/admin/perfiles?${params.toString()}`)
-  }, [currentStatus, searchParams.pais, searchParams.sort, searchParams.dir, searchInput, router])
+  }, [currentStatus, searchParams.pais, searchParams.sort, searchParams.dir, searchParams.incomplete, searchInput, router])
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected)
