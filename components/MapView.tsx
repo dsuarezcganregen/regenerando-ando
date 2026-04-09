@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css'
 
 function createCowIcon(color: string): L.DivIcon {
   return L.divIcon({
-    html: `<div style="font-size: 40px; filter: drop-shadow(0 0 6px ${color}) drop-shadow(0 0 14px ${color}); line-height: 1; cursor: pointer;">🐄</div>`,
+    html: `<div style="font-size: 40px; filter: drop-shadow(0 0 6px ${color}) drop-shadow(0 0 14px ${color}); line-height: 1; cursor: pointer;">🐂</div>`,
     className: 'cow-marker',
     iconSize: [44, 44],
     iconAnchor: [22, 22],
