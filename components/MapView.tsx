@@ -1,9 +1,42 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet'
 import Link from 'next/link'
 import 'leaflet/dist/leaflet.css'
+
+function createCowIcon(color: string): L.DivIcon {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="32" height="32">
+    <!-- Shadow -->
+    <ellipse cx="18" cy="34" rx="10" ry="2" fill="rgba(0,0,0,0.15)"/>
+    <!-- Pin body -->
+    <path d="M18 33 C18 33 4 20 4 13 C4 5.8 10.3 0.5 18 0.5 C25.7 0.5 32 5.8 32 13 C32 20 18 33 18 33Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+    <!-- Cow face -->
+    <ellipse cx="18" cy="13" rx="7" ry="6" fill="white"/>
+    <!-- Spots -->
+    <ellipse cx="15" cy="11.5" rx="2.5" ry="2" fill="${color}" opacity="0.6"/>
+    <ellipse cx="21.5" cy="12.5" rx="2" ry="1.5" fill="${color}" opacity="0.6"/>
+    <!-- Eyes -->
+    <circle cx="15.5" cy="12" r="1" fill="#333"/>
+    <circle cx="20.5" cy="12" r="1" fill="#333"/>
+    <!-- Nose/muzzle -->
+    <ellipse cx="18" cy="15.5" rx="3" ry="1.8" fill="#F5D0C5" stroke="${color}" stroke-width="0.5" opacity="0.8"/>
+    <circle cx="17" cy="15.5" r="0.5" fill="${color}" opacity="0.5"/>
+    <circle cx="19" cy="15.5" r="0.5" fill="${color}" opacity="0.5"/>
+    <!-- Ears/horns -->
+    <ellipse cx="11" cy="8" rx="2.5" ry="1.5" fill="${color}" stroke="white" stroke-width="0.5" transform="rotate(-20 11 8)"/>
+    <ellipse cx="25" cy="8" rx="2.5" ry="1.5" fill="${color}" stroke="white" stroke-width="0.5" transform="rotate(20 25 8)"/>
+  </svg>`
+
+  return L.divIcon({
+    html: svg,
+    className: 'cow-marker',
+    iconSize: [32, 36],
+    iconAnchor: [16, 34],
+    popupAnchor: [0, -30],
+  })
+}
 
 const countryColors: Record<string, string> = {
   MX: '#0F6E56',
@@ -103,16 +136,10 @@ export default function MapView({
         {markers.map((marker) => {
           const color = getColor(marker.country)
           return (
-            <CircleMarker
+            <Marker
               key={marker.id}
-              center={[marker.latitude, marker.longitude]}
-              radius={6}
-              pathOptions={{
-                color,
-                fillColor: color,
-                fillOpacity: 0.7,
-                weight: 1,
-              }}
+              position={[marker.latitude, marker.longitude]}
+              icon={createCowIcon(color)}
             >
               <Popup>
                 <div className="min-w-[200px]">
@@ -135,7 +162,7 @@ export default function MapView({
                   )}
                 </div>
               </Popup>
-            </CircleMarker>
+            </Marker>
           )
         })}
       </MapContainer>
