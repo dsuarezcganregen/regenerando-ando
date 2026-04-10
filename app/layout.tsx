@@ -26,6 +26,14 @@ export const metadata: Metadata = {
     siteName: 'Regenerando Ando',
     title: 'Regenerando Ando — Directorio mundial de ganaderos regenerativos',
     description: 'Encuentra ganaderos regenerativos en todo el mundo. Directorio con mapa interactivo, estadísticas y resultados de ganadería regenerativa.',
+    images: [
+      {
+        url: 'https://www.regenerandoando.com/og-image.png',
+        width: 1200,
+        height: 1200,
+        alt: 'Regenerando Ando — Directorio mundial de ganaderos regenerativos',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
