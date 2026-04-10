@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -7,9 +8,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div>
-            <Link href="/" className="text-xl font-bold">
-              <span className="text-white">regenerando</span>
-              <span className="text-secondary">ando</span>
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Regenerando Ando"
+                width={160}
+                height={48}
+                className="h-10 w-auto"
+              />
             </Link>
             <p className="mt-3 text-sm text-gray-400">
               El directorio mundial de ganaderos regenerativos.

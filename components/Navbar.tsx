@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import NotificationBell from './NotificationBell'
@@ -30,9 +31,15 @@ export default function Navbar() {
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-1 text-xl font-bold">
-            <span className="text-primary">regenerando</span>
-            <span className="text-secondary">ando</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo-white-bg.png"
+              alt="Regenerando Ando"
+              width={160}
+              height={48}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}

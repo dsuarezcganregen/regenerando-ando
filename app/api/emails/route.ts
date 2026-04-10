@@ -327,9 +327,7 @@ function baseTemplate(content: string): string {
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <!-- Header -->
     <div style="text-align: center; margin-bottom: 32px;">
-      <span style="font-size: 24px; font-weight: 700;">
-        <span style="color: #111;">regenerando</span><span style="color: #1D9E75;">ando</span>
-      </span>
+      <img src="https://regenerandoando.com/logo-white-bg.png" alt="Regenerando Ando" style="height: 60px; width: auto;" />
     </div>
 
     <!-- Card -->
