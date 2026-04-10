@@ -33,7 +33,7 @@ export default async function Home() {
       />
 
       {/* Hero */}
-      <section className="bg-hero-bg">
+      <section className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
           <Image
             src="/logo-white-bg.png"
@@ -63,7 +63,7 @@ export default async function Home() {
       </section>
 
       {/* Por qué registrarte */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-hero-bg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
             ¿Por qué registrar tu rancho?
@@ -94,7 +94,7 @@ export default async function Home() {
       </section>
 
       {/* Qué es Regenerando Ando */}
-      <section className="py-16 sm:py-24 bg-gray-50">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
             ¿Qué es <span className="text-primary">regenerando</span><span className="text-secondary">ando</span>?
@@ -125,7 +125,7 @@ export default async function Home() {
       </section>
 
       {/* Cómo funciona */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-hero-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
             ¿Cómo funciona?
@@ -141,7 +141,7 @@ export default async function Home() {
 
       {/* Mapa */}
       {mapMarkers.length > 0 && (
-        <section className="py-12 sm:py-16 bg-gray-50">
+        <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
               Ganaderos en el mapa
@@ -165,7 +165,7 @@ export default async function Home() {
       )}
 
       {/* Quién está detrás */}
-      <section className="py-16 sm:py-24 bg-gray-50">
+      <section className="py-16 sm:py-24 bg-hero-bg">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
             ¿Quién está detrás?
