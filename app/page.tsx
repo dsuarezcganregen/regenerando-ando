@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import HomeMapPreview from "@/components/HomeMapPreview"
 
@@ -34,6 +35,14 @@ export default async function Home() {
       {/* Hero */}
       <section className="bg-hero-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
+          <Image
+            src="/logo-white-bg.png"
+            alt="Regenerando Ando"
+            width={280}
+            height={280}
+            className="mx-auto mb-8 w-48 sm:w-56 lg:w-64 h-auto"
+            priority
+          />
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
             El directorio mundial de{" "}
             <span className="text-primary">ganaderos regenerativos</span>
