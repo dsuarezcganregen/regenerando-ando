@@ -12,9 +12,9 @@ export default function Footer() {
               <Image
                 src="/logo.png"
                 alt="Regenerando Ando"
-                width={160}
-                height={48}
-                className="h-10 w-auto"
+                width={200}
+                height={56}
+                className="h-14 w-auto"
               />
             </Link>
             <p className="mt-3 text-sm text-gray-400">

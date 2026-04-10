@@ -35,9 +35,9 @@ export default function Navbar() {
             <Image
               src="/logo-white-bg.png"
               alt="Regenerando Ando"
-              width={160}
-              height={48}
-              className="h-10 w-auto"
+              width={200}
+              height={56}
+              className="h-14 w-auto"
               priority
             />
           </Link>
