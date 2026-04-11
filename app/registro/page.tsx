@@ -695,6 +695,14 @@ export default function RegistroWizardPage() {
           {step < 8 && <p className="text-gray-500 mt-1">Paso {step} de 7: {stepNames[step - 1]}</p>}
         </div>
 
+        {step === 1 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-sm text-blue-800">
+              <strong>Importante:</strong> Tu rancho no será publicado hasta que completes los 7 pasos y nuestro equipo revise tu perfil.
+            </p>
+          </div>
+        )}
+
         {step < 8 && (
           <div className="mb-8 flex gap-1">
             {Array.from({ length: 7 }, (_, i) => (

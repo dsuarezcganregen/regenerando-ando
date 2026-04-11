@@ -29,12 +29,19 @@ export default function LoginPage() {
       return
     }
 
-    // Check if user is admin
     if (loginData.user) {
+      // Check if user is admin
       const { data: admin } = await supabase.from('admins').select('id').eq('user_id', loginData.user.id).single()
       if (admin) {
         router.push('/admin')
         router.refresh()
+        return
+      }
+
+      // Check if profile is incomplete (no ranch_name)
+      const { data: profile } = await supabase.from('profiles').select('ranch_name').eq('id', loginData.user.id).single()
+      if (!profile || !profile.ranch_name) {
+        window.location.href = '/registro'
         return
       }
     }
@@ -52,6 +59,18 @@ export default function LoginPage() {
             <span className="text-secondary">ando</span>
           </Link>
           <h1 className="mt-4 text-xl font-semibold text-gray-900">Iniciar sesión</h1>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-center">
+          <p className="text-sm text-amber-800 font-medium">
+            ¿Aún no tienes cuenta?
+          </p>
+          <Link
+            href="/auth/registro"
+            className="inline-block mt-2 bg-primary text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
+          >
+            Registrarme
+          </Link>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
