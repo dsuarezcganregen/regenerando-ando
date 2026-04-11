@@ -25,6 +25,7 @@ const ecosystemLabels: Record<string, string> = {
   bosque_tropical_seco: 'Bosque tropical seco',
   bosque_templado: 'Bosque templado',
   bosque_mesofilo: 'Bosque mesófilo',
+  dehesa: 'Dehesa',
   pastizal: 'Pastizal',
   sabana: 'Sabana',
   matorral_xerofilo: 'Matorral xerófilo',

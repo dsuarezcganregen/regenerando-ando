@@ -973,6 +973,7 @@ function LocationSection({
   const ecosystemOptions = [
     { value: 'bosque_tropical_humedo', label: 'Bosque tropical humedo' },
     { value: 'bosque_tropical_seco', label: 'Bosque tropical seco' },
+    { value: 'dehesa', label: 'Dehesa' },
     { value: 'pastizal', label: 'Pastizal' },
     { value: 'sabana', label: 'Sabana' },
     { value: 'matorral', label: 'Matorral' },

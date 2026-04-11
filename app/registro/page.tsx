@@ -753,7 +753,7 @@ export default function RegistroWizardPage() {
               <Input label="Localidad / Poblado" value={locality} onChange={setLocality} />
               <Sel label="Ecosistema *" value={ecosystem} onChange={setEcosystem} options={[
                 ['bosque_tropical_humedo','Bosque tropical húmedo'],['bosque_tropical_seco','Bosque tropical seco'],
-                ['bosque_templado','Bosque templado'],['pastizal','Pastizal'],['sabana','Sabana'],
+                ['bosque_templado','Bosque templado'],['dehesa','Dehesa'],['pastizal','Pastizal'],['sabana','Sabana'],
                 ['matorral_xerofilo','Matorral xerófilo'],['semidesierto','Semidesierto'],
                 ['sistema_agroforestal','Sistema agroforestal'],['humedal','Humedal'],['otro','Otro'],
               ]} />

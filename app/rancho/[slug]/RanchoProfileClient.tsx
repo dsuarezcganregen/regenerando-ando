@@ -16,7 +16,7 @@ const speciesLabels: Record<string, string> = {
 }
 const ecoShort: Record<string, string> = {
   bosque_tropical_humedo:'Bosque tropical húmedo',bosque_tropical_seco:'Bosque tropical seco',bosque_templado:'Bosque templado',
-  pastizal:'Pastizal',sabana:'Sabana',matorral_xerofilo:'Matorral xerófilo',semidesierto:'Semidesierto',
+  dehesa:'Dehesa',pastizal:'Pastizal',sabana:'Sabana',matorral_xerofilo:'Matorral xerófilo',semidesierto:'Semidesierto',
   sistema_agroforestal:'Sistema agroforestal',humedal:'Humedal',otro:'Otro',
 }
 const resultIcons: Record<string, string> = {
