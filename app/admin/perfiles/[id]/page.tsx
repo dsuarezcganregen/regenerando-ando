@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import AdminProfileActions from './AdminProfileActions'
+import AdminPhotosSection from './AdminPhotosSection'
 
 const countryNames: Record<string, string> = {
   MX: 'México', CO: 'Colombia', AR: 'Argentina', EC: 'Ecuador', CR: 'Costa Rica',
@@ -40,6 +41,7 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
   const products = profile.products || []
   const envResults = profile.results_environmental || []
   const econResults = profile.results_economic || []
+  const photos = profile.photos || []
   const role = admin?.role || 'editor'
 
   const statusColors: Record<string, string> = {
@@ -178,6 +180,11 @@ export default async function AdminPerfilPage(props: { params: Promise<{ id: str
           </div>
         </Section>
       )}
+
+      {/* Fotos del rancho */}
+      <Section title={`Fotos del rancho${photos.length > 0 ? ` (${photos.length})` : ''}`}>
+        <AdminPhotosSection initialPhotos={photos} />
+      </Section>
 
       {/* Resultados ambientales */}
       {envResults.length > 0 && (

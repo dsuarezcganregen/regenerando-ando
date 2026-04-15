@@ -61,6 +61,7 @@ interface Photo {
   url: string
   caption: string | null
   is_primary: boolean
+  storage_path?: string | null
 }
 
 interface PhotoUploaderProps {
@@ -142,9 +143,28 @@ export default function PhotoUploader({
   }
 
   const handleDelete = async (photo: Photo) => {
-    await supabase.storage.from('ranch-photos').remove([photo.url.split('ranch-photos/')[1] || ''])
-    await supabase.from('photos').delete().eq('id', photo.id)
+    if (!confirm('¿Eliminar esta foto? Esta acción no se puede deshacer.')) return
+
+    // Prefer storage_path (reliable), fallback to parsing from URL
+    const path = photo.storage_path || photo.url.split('ranch-photos/')[1] || ''
+    if (path) {
+      await supabase.storage.from('ranch-photos').remove([path])
+    }
+    const { error: delError } = await supabase.from('photos').delete().eq('id', photo.id)
+    if (delError) {
+      alert('No se pudo eliminar la foto: ' + delError.message)
+      return
+    }
+
     const updated = photos.filter((p) => p.id !== photo.id)
+
+    // If we deleted the primary photo and there are others, promote the first one
+    if (photo.is_primary && updated.length > 0) {
+      const newPrimary = updated[0]
+      await supabase.from('photos').update({ is_primary: true }).eq('id', newPrimary.id)
+      updated[0] = { ...newPrimary, is_primary: true }
+    }
+
     onPhotosChange(updated)
   }
 
@@ -163,10 +183,16 @@ export default function PhotoUploader({
             <button
               type="button"
               onClick={() => handleDelete(photo)}
-              className="absolute top-2 right-2 bg-red-600 text-white w-6 h-6 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              aria-label="Eliminar foto"
+              className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full text-sm font-bold shadow-lg flex items-center justify-center ring-2 ring-white"
             >
-              X
+              ×
             </button>
+            {photo.is_primary && (
+              <span className="absolute bottom-2 left-2 bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-medium shadow">
+                Principal
+              </span>
+            )}
           </div>
         ))}
 
